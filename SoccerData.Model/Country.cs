@@ -12,6 +12,7 @@ namespace SoccerData.Model
 		public string FlagUrl { get; set; }
 
 		public ICollection<Competition> Competitions { get; set; }
+		public ICollection<Venue> Venues { get; set; }
 		public ICollection<Team> Teams { get; set; }
 	}
 }
