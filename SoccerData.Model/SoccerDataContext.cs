@@ -13,6 +13,7 @@ namespace SoccerData.Model
 		public DbSet<Country> Countries { get; set; }
 		public DbSet<Competition> Competitions { get; set; }
 		public DbSet<CompetitionSeason> CompetitionSeasons { get; set; }
+		public DbSet<Team> Teams { get; set; }
 
 		protected override void OnModelCreating(DbModelBuilder modelBuilder)
 		{
@@ -26,6 +27,10 @@ namespace SoccerData.Model
 			modelBuilder.Entity<CompetitionSeason>().HasKey(cs => cs.CompetitionSeasonId);
 			modelBuilder.Entity<CompetitionSeason>().Property(cs => cs.CompetitionSeasonId).HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
 			modelBuilder.Entity<CompetitionSeason>().HasRequired(cs => cs.Competition).WithMany(c => c.CompetitionSeasons).HasForeignKey(cs => cs.CompetitionId);
+
+			modelBuilder.Entity<Team>().HasKey(t => t.TeamId);
+			modelBuilder.Entity<Team>().Property(t => t.TeamId).HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
+			modelBuilder.Entity<Team>().HasRequired(t => t.Country).WithMany(c => c.Teams).HasForeignKey(t => t.CountryId);
 		}
 	}
 }
