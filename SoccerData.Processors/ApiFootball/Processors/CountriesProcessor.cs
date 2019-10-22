@@ -19,15 +19,21 @@ namespace SoccerData.Processors.ApiFootball.Processors
 												.ThenBy(x => x.Code)
 												.ToList();
 
+			var existingCountries = dbContext.Countries.ToDictionary(x => x.CountryAbbr);
+
 			foreach (var country in orderedCountries)
 			{
-				var dbCountry = new Country
+				if (!existingCountries.ContainsKey(country.Code))
 				{
-					CountryName = country.CountryName,
-					CountryAbbr = country.Code,
-					FlagUrl = country.Flag?.ToString()
-				};
-				dbContext.Countries.Add(dbCountry);
+					var dbCountry = new Country
+					{
+						CountryName = country.CountryName,
+						CountryAbbr = country.Code,
+						FlagUrl = country.Flag?.ToString()
+					};
+					existingCountries.Add(country.Code, dbCountry);
+					dbContext.Countries.Add(dbCountry);
+				}
 			}
 		}
 	}
