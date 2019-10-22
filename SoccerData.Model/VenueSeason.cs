@@ -4,17 +4,15 @@ using System.Text;
 
 namespace SoccerData.Model
 {
-	public class Venue
+	public class VenueSeason
 	{
+		public int VenueSeasonId { get; set; }
 		public int VenueId { get; set; }
+		public int Season { get; set; }
 		public string VenueName { get; set; }
 		public int? Capacity { get; set; }
 		public string SurfaceType { get; set; }
-		public int CountryId { get; set; }
-		public string VenueCity { get; set; }
-		public string VenueAddress { get; set; }
 
-		public virtual Country Country { get; set; }
-		public virtual ICollection<VenueSeason> VenueSeasons { get; set; }
+		public virtual Venue Venue { get; set; }
 	}
 }

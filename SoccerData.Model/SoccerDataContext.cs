@@ -14,6 +14,7 @@ namespace SoccerData.Model
 		public DbSet<Competition> Competitions { get; set; }
 		public DbSet<CompetitionSeason> CompetitionSeasons { get; set; }
 		public DbSet<Venue> Venues { get; set; }
+		public DbSet<Venue> VenueSeasons { get; set; }
 		public DbSet<Team> Teams { get; set; }
 
 		protected override void OnModelCreating(DbModelBuilder modelBuilder)
@@ -32,6 +33,10 @@ namespace SoccerData.Model
 			modelBuilder.Entity<Venue>().HasKey(v => v.VenueId);
 			modelBuilder.Entity<Venue>().Property(v => v.VenueId).HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
 			modelBuilder.Entity<Venue>().HasRequired(v => v.Country).WithMany(c => c.Venues).HasForeignKey(v => v.CountryId);
+
+			modelBuilder.Entity<VenueSeason>().HasKey(vs => vs.VenueSeasonId);
+			modelBuilder.Entity<VenueSeason>().Property(vs => vs.VenueSeasonId).HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
+			modelBuilder.Entity<VenueSeason>().HasRequired(vs => vs.Venue).WithMany(v => v.VenueSeasons).HasForeignKey(vs => vs.VenueId);
 
 			modelBuilder.Entity<Team>().HasKey(t => t.TeamId);
 			modelBuilder.Entity<Team>().Property(t => t.TeamId).HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
