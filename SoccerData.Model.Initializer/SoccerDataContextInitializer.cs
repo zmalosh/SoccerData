@@ -10,9 +10,6 @@ namespace SoccerData.Model.Initializer
 		protected override void Seed(SoccerDataContext context)
 		{
 			base.Seed(context);
-			context.Countries.Add(new Country { CountryName = "USA" });
-			context.Countries.Add(new Country { CountryName = "Spain" });
-			context.SaveChanges();
 		}
 	}
 }

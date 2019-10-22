@@ -15,6 +15,7 @@ namespace SoccerData.Model.Initializer
 
 				var countriesProcessor = new CountriesProcessor();
 				countriesProcessor.Run(context);
+				context.SaveChanges();
 				var a = 1;
 			}
 		}

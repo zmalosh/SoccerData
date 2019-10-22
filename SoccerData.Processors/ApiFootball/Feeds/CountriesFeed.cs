@@ -31,7 +31,7 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 		public class Country
 		{
 			[JsonProperty("country")]
-			public string CountryCountry { get; set; }
+			public string CountryName { get; set; }
 
 			[JsonProperty("code")]
 			public string Code { get; set; }

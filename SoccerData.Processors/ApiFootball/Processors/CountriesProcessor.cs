@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using SoccerData.Model;
 
@@ -13,7 +14,21 @@ namespace SoccerData.Processors.ApiFootball.Processors
 			var rawJson = JsonUtility.GetRawJsonFromUrl(url);
 			var feed = Feeds.CountriesFeed.FromJson(rawJson);
 
-			Console.WriteLine($"{feed.Result.Count}");
+			var orderedCountries = feed.Result.Countries
+												.OrderBy(x => string.Equals(x.CountryName, "World", StringComparison.InvariantCultureIgnoreCase) ? 0 : 1)
+												.ThenBy(x => x.Code)
+												.ToList();
+
+			foreach (var country in orderedCountries)
+			{
+				var dbCountry = new Country
+				{
+					CountryName = country.CountryName,
+					CountryAbbr = country.Code,
+					FlagUrl = country.Flag?.ToString()
+				};
+				dbContext.Countries.Add(dbCountry);
+			}
 		}
 	}
 }
