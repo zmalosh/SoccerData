@@ -19,11 +19,11 @@ namespace SoccerData.Processors.ApiFootball.Processors
 												.ThenBy(x => x.Code)
 												.ToList();
 
-			var existingCountries = dbContext.Countries.ToDictionary(x => x.CountryAbbr);
+			var existingCountries = dbContext.Countries.ToDictionary(x => x.CountryAbbr ?? "(null)");
 
 			foreach (var country in orderedCountries)
 			{
-				if (!existingCountries.ContainsKey(country.Code))
+				if (!existingCountries.ContainsKey(country.Code ?? "(null)"))
 				{
 					var dbCountry = new Country
 					{
@@ -31,7 +31,7 @@ namespace SoccerData.Processors.ApiFootball.Processors
 						CountryAbbr = country.Code,
 						FlagUrl = country.Flag?.ToString()
 					};
-					existingCountries.Add(country.Code, dbCountry);
+					existingCountries.Add(country.Code ?? "(null)", dbCountry);
 					dbContext.Countries.Add(dbCountry);
 				}
 			}

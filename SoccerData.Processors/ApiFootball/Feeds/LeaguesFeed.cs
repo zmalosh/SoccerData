@@ -54,10 +54,10 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 			public DateTime SeasonEnd { get; set; }
 
 			[JsonProperty("logo")]
-			public string Logo { get; set; }
+			public Uri Logo { get; set; }
 
 			[JsonProperty("flag")]
-			public string Flag { get; set; }
+			public Uri Flag { get; set; }
 
 			[JsonIgnore]
 			public bool Standings { get { return this._standings == 1; } }
@@ -80,62 +80,35 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 			[JsonProperty("fixtures")]
 			public Fixtures Fixtures { get; set; }
 
-			[JsonIgnore]
-			public bool Standings { get { return this._standings == 1; } }
-
 			[JsonProperty("standings")]
-			private int _standings { get; set; }
-
-			[JsonIgnore]
-			public bool Players { get { return this._players == 1; } }
+			public bool Standings { get; set; }
 
 			[JsonProperty("players")]
-			private int _players { get; set; }
-
-			[JsonIgnore]
-			public bool TopScorers { get { return this._topScorers == 1; } }
+			public bool Players { get; set; }
 
 			[JsonProperty("topScorers")]
-			private int _topScorers { get; set; }
-
-			[JsonIgnore]
-			public bool Predictions { get { return this._predictions == 1; } }
+			public bool TopScorers { get; set; }
 
 			[JsonProperty("predictions")]
-			private int _predictions { get; set; }
-
-			[JsonIgnore]
-			public bool Odds { get { return this._odds == 1; } }
+			public bool Predictions { get; set; }
 
 			[JsonProperty("odds")]
-			private int _odds { get; set; }
+			public bool Odds { get; set; }
 		}
 
 		public partial class Fixtures
 		{
-			[JsonIgnore]
-			public bool Events { get { return this._events == 1; } }
-
 			[JsonProperty("events")]
-			private int _events { get; set; }
-
-			[JsonIgnore]
-			public bool Lineups { get { return this._lineups == 1; } }
+			public bool Events { get; set; }
 
 			[JsonProperty("lineups")]
-			private int _lineups { get; set; }
-
-			[JsonIgnore]
-			public bool TeamStatistics { get { return this._teamStatistics == 1; } }
+			public bool Lineups { get; set; }
 
 			[JsonProperty("statistics")]
-			private int _teamStatistics { get; set; }
-
-			[JsonIgnore]
-			public bool PlayersStatistics { get { return this._playersStatistics == 1; } }
+			public bool TeamStatistics { get; set; }
 
 			[JsonProperty("players_statistics")]
-			private int _playersStatistics { get; set; }
+			public bool PlayersStatistics { get; set; }
 		}
 	}
 
