@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -11,6 +11,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SoccerData.Model\SoccerData.Model.csproj" />
+    <ProjectReference Include="..\SoccerData.Processors\SoccerData.Processors.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="ApiFootball.key">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

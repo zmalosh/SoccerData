@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SoccerData.Processors.ApiFootball.Processors;
+using System;
 
 namespace SoccerData.Model.Initializer
 {
@@ -11,6 +12,10 @@ namespace SoccerData.Model.Initializer
 			{
 				var init = new SoccerDataContextInitializer();
 				init.InitializeDatabase(context);
+
+				var countriesProcessor = new CountriesProcessor();
+				countriesProcessor.Run(context);
+				var a = 1;
 			}
 		}
 	}
