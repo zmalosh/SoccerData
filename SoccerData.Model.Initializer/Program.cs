@@ -7,6 +7,11 @@ namespace SoccerData.Model.Initializer
 		static void Main(string[] args)
 		{
 			Console.WriteLine("Hello World!");
+			using (var context = new SoccerDataContext())
+			{
+				var init = new SoccerDataContextInitializer();
+				init.InitializeDatabase(context);
+			}
 		}
 	}
 }
