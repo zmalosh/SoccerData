@@ -21,6 +21,7 @@ namespace SoccerData.Model
 		public bool HasPredictions { get; set; }
 		public bool HasStandings { get; set; }
 		public bool HasTopScorers { get; set; }
+		public int ApiFootballId { get; set; }
 
 		public virtual Competition Competition { get; set; }
 	}

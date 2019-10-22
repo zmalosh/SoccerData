@@ -11,7 +11,6 @@ namespace SoccerData.Model
 		public string CompetitionName { get; set; }
 		public string CompetitionType { get; set; }
 		public string LogoUrl { get; set; }
-		public int ApiFootballId { get; set; }
 
 		public virtual Country Country { get; set; }
 		public virtual ICollection<CompetitionSeason> CompetitionSeasons { get; set; }
