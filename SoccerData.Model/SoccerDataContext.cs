@@ -33,7 +33,6 @@ namespace SoccerData.Model
 
 			modelBuilder.Entity<Venue>().HasKey(v => v.VenueId);
 			modelBuilder.Entity<Venue>().Property(v => v.VenueId).HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
-			modelBuilder.Entity<Venue>().HasRequired(v => v.Country).WithMany(c => c.Venues).HasForeignKey(v => v.CountryId).WillCascadeOnDelete(false);
 
 			modelBuilder.Entity<VenueSeason>().HasKey(vs => vs.VenueSeasonId);
 			modelBuilder.Entity<VenueSeason>().Property(vs => vs.VenueSeasonId).HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);

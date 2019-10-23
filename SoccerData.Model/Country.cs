@@ -10,9 +10,9 @@ namespace SoccerData.Model
 		public string CountryName { get; set; }
 		public string CountryAbbr { get; set; }
 		public string FlagUrl { get; set; }
+		public string ApiFootballCountryName { get; set; }
 
 		public ICollection<Competition> Competitions { get; set; }
-		public ICollection<Venue> Venues { get; set; }
 		public ICollection<Team> Teams { get; set; }
 	}
 }

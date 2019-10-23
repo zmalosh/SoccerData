@@ -13,8 +13,8 @@ namespace SoccerData.Model
 		public int CountryId { get; set; }
 		public string VenueCity { get; set; }
 		public string VenueAddress { get; set; }
+		public string VenueNation { get; set; }
 
-		public virtual Country Country { get; set; }
 		public virtual ICollection<VenueSeason> VenueSeasons { get; set; }
 	}
 }
