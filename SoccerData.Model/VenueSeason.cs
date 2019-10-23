@@ -14,5 +14,6 @@ namespace SoccerData.Model
 		public string SurfaceType { get; set; }
 
 		public virtual Venue Venue { get; set; }
+		public virtual ICollection<TeamSeason> TeamSeasons { get; set; }
 	}
 }

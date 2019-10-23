@@ -14,8 +14,9 @@ namespace SoccerData.Model
 		public DbSet<Competition> Competitions { get; set; }
 		public DbSet<CompetitionSeason> CompetitionSeasons { get; set; }
 		public DbSet<Venue> Venues { get; set; }
-		public DbSet<Venue> VenueSeasons { get; set; }
+		public DbSet<VenueSeason> VenueSeasons { get; set; }
 		public DbSet<Team> Teams { get; set; }
+		public DbSet<TeamSeason> TeamSeasons { get; set; }
 
 		protected override void OnModelCreating(DbModelBuilder modelBuilder)
 		{
@@ -24,23 +25,29 @@ namespace SoccerData.Model
 
 			modelBuilder.Entity<Competition>().HasKey(c => c.CompetitionId);
 			modelBuilder.Entity<Competition>().Property(c => c.CompetitionId).HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
-			modelBuilder.Entity<Competition>().HasRequired(c => c.Country).WithMany(c => c.Competitions).HasForeignKey(c => c.CountryId);
+			modelBuilder.Entity<Competition>().HasRequired(c => c.Country).WithMany(c => c.Competitions).HasForeignKey(c => c.CountryId).WillCascadeOnDelete(false);
 
 			modelBuilder.Entity<CompetitionSeason>().HasKey(cs => cs.CompetitionSeasonId);
 			modelBuilder.Entity<CompetitionSeason>().Property(cs => cs.CompetitionSeasonId).HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
-			modelBuilder.Entity<CompetitionSeason>().HasRequired(cs => cs.Competition).WithMany(c => c.CompetitionSeasons).HasForeignKey(cs => cs.CompetitionId);
+			modelBuilder.Entity<CompetitionSeason>().HasRequired(cs => cs.Competition).WithMany(c => c.CompetitionSeasons).HasForeignKey(cs => cs.CompetitionId).WillCascadeOnDelete(false);
 
 			modelBuilder.Entity<Venue>().HasKey(v => v.VenueId);
 			modelBuilder.Entity<Venue>().Property(v => v.VenueId).HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
-			modelBuilder.Entity<Venue>().HasRequired(v => v.Country).WithMany(c => c.Venues).HasForeignKey(v => v.CountryId);
+			modelBuilder.Entity<Venue>().HasRequired(v => v.Country).WithMany(c => c.Venues).HasForeignKey(v => v.CountryId).WillCascadeOnDelete(false);
 
 			modelBuilder.Entity<VenueSeason>().HasKey(vs => vs.VenueSeasonId);
 			modelBuilder.Entity<VenueSeason>().Property(vs => vs.VenueSeasonId).HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
-			modelBuilder.Entity<VenueSeason>().HasRequired(vs => vs.Venue).WithMany(v => v.VenueSeasons).HasForeignKey(vs => vs.VenueId);
+			modelBuilder.Entity<VenueSeason>().HasRequired(vs => vs.Venue).WithMany(v => v.VenueSeasons).HasForeignKey(vs => vs.VenueId).WillCascadeOnDelete(false);
 
 			modelBuilder.Entity<Team>().HasKey(t => t.TeamId);
 			modelBuilder.Entity<Team>().Property(t => t.TeamId).HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
-			modelBuilder.Entity<Team>().HasRequired(t => t.Country).WithMany(c => c.Teams).HasForeignKey(t => t.CountryId);
+			modelBuilder.Entity<Team>().HasRequired(t => t.Country).WithMany(c => c.Teams).HasForeignKey(t => t.CountryId).WillCascadeOnDelete(false);
+
+			modelBuilder.Entity<TeamSeason>().HasKey(ts => ts.TeamSeasonId);
+			modelBuilder.Entity<TeamSeason>().Property(ts => ts.TeamSeasonId).HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
+			modelBuilder.Entity<TeamSeason>().HasRequired(ts => ts.Team).WithMany(t => t.TeamSeasons).HasForeignKey(ts => ts.TeamId).WillCascadeOnDelete(false);
+			modelBuilder.Entity<TeamSeason>().HasRequired(ts => ts.CompetitionSeason).WithMany(cs => cs.TeamSeasons).HasForeignKey(ts => ts.CompetitionSeasonId).WillCascadeOnDelete(false);
+			modelBuilder.Entity<TeamSeason>().HasOptional(ts => ts.VenueSeason).WithMany(vs => vs.TeamSeasons).HasForeignKey(ts => ts.VenueSeasonId).WillCascadeOnDelete(false);
 		}
 	}
 }

@@ -14,5 +14,6 @@ namespace SoccerData.Model
 		public int ApiFootballId { get; set; }
 
 		public virtual Country Country { get; set; }
+		public virtual ICollection<TeamSeason> TeamSeasons { get; set; }
 	}
 }
