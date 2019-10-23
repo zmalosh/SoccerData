@@ -23,11 +23,6 @@ namespace SoccerData.Model.Initializer
 				leaguesProcessor.Run(context);
 				context.SaveChanges();
 
-				var competitionSeasonIds = context.CompetitionSeasons
-													.Select(x => x.CompetitionSeasonId)
-													.Distinct()
-													.OrderBy(x => x)
-													.ToList();
 				var desiredLeagueIds = new List<int>
 				{
 					751, 752, 51, 403,							// EURO CHAMPS
@@ -40,7 +35,13 @@ namespace SoccerData.Model.Initializer
 					201, 200, 199, 294,							// USA - MLS
 					521, 520, 519, 518, 522, 523				// USA - USL
 				};
-				competitionSeasonIds = competitionSeasonIds.Where(x => desiredLeagueIds.Contains(x)).ToList();
+
+				var competitionSeasonIds = context.CompetitionSeasons
+													.Where(x => desiredLeagueIds.Contains(x.ApiFootballId))
+													.Select(x => x.CompetitionSeasonId)
+													.Distinct()
+													.OrderBy(x => x)
+													.ToList();
 				foreach (var competitionSeasonId in competitionSeasonIds)
 				{
 					var teamsProcessor = new TeamsProcessor(competitionSeasonId);
