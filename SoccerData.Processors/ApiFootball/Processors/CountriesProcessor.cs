@@ -29,7 +29,8 @@ namespace SoccerData.Processors.ApiFootball.Processors
 					{
 						CountryName = country.CountryName,
 						CountryAbbr = country.Code,
-						FlagUrl = country.Flag?.ToString()
+						FlagUrl = country.Flag?.ToString(),
+						ApiFootballCountryName = country.CountryName
 					};
 					existingCountries.Add(country.Code ?? "(null)", dbCountry);
 					dbContext.Countries.Add(dbCountry);

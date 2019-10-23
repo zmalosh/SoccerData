@@ -1,5 +1,6 @@
 ﻿using SoccerData.Processors.ApiFootball.Processors;
 using System;
+using System.Linq;
 
 namespace SoccerData.Model.Initializer
 {
@@ -20,6 +21,14 @@ namespace SoccerData.Model.Initializer
 				var leaguesProcessor = new LeaguesProcessor();
 				leaguesProcessor.Run(context);
 				context.SaveChanges();
+
+				var competitionSeasonIds = context.CompetitionSeasons.Select(x => x.CompetitionSeasonId).Distinct().ToList();
+				foreach (var competitionSeasonId in competitionSeasonIds)
+				{
+					var teamsProcessor = new TeamsProcessor(competitionSeasonId);
+					teamsProcessor.Run(context);
+					context.SaveChanges();
+				}
 				var a = 1;
 			}
 		}

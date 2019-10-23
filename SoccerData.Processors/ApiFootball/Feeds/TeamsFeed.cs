@@ -22,12 +22,12 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 		public static TeamsFeed FromJson(string json) => JsonConvert.DeserializeObject<TeamsFeed>(json, Converter.Settings);
 
 		[JsonProperty("api")]
-		public ApiResult Api { get; set; }
+		public ApiResult Result { get; set; }
 
 		public class ApiResult
 		{
 			[JsonProperty("results")]
-			public long Results { get; set; }
+			public int Count { get; set; }
 
 			[JsonProperty("teams")]
 			public List<Team> Teams { get; set; }
@@ -36,7 +36,7 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 		public class Team
 		{
 			[JsonProperty("team_id")]
-			public long TeamId { get; set; }
+			public int TeamId { get; set; }
 
 			[JsonProperty("name")]
 			public string Name { get; set; }
@@ -51,7 +51,7 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 			public string Country { get; set; }
 
 			[JsonProperty("founded")]
-			public long Founded { get; set; }
+			public int? Founded { get; set; }
 
 			[JsonProperty("venue_name")]
 			public string VenueName { get; set; }
@@ -66,7 +66,7 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 			public string VenueCity { get; set; }
 
 			[JsonProperty("venue_capacity")]
-			public long VenueCapacity { get; set; }
+			public int? VenueCapacity { get; set; }
 		}
 	}
 
