@@ -16,7 +16,7 @@ namespace SoccerData.Model
 		public string Status { get; set; }
 		public string StatusShort { get; set; }
 		public int? TimeElapsed { get; set; }
-		public int? RefereeId { get; set; }
+		public string Referee { get; set; }
 		public int? VenueSeasonId { get; set; }
 		public int? HomeHalfTimeScore { get; set; }
 		public int? AwayHalfTimeScore { get; set; }
@@ -36,6 +36,5 @@ namespace SoccerData.Model
 		public virtual TeamSeason HomeTeamSeason { get; set; }
 		public virtual TeamSeason AwayTeamSeason { get; set; }
 		public virtual VenueSeason VenueSeason { get; set; }
-		public virtual Referee Referee { get; set; }
 	}
 }

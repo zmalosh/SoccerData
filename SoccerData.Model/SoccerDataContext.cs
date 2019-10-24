@@ -55,16 +55,12 @@ namespace SoccerData.Model
 			modelBuilder.Entity<TeamSeason>().HasRequired(ts => ts.CompetitionSeason).WithMany(cs => cs.TeamSeasons).HasForeignKey(ts => ts.CompetitionSeasonId).WillCascadeOnDelete(false);
 			modelBuilder.Entity<TeamSeason>().HasOptional(ts => ts.VenueSeason).WithMany(vs => vs.TeamSeasons).HasForeignKey(ts => ts.VenueSeasonId).WillCascadeOnDelete(false);
 
-			modelBuilder.Entity<Referee>().HasKey(r => r.RefereeId);
-			modelBuilder.Entity<Referee>().Property(r => r.RefereeId).HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
-
 			modelBuilder.Entity<Fixture>().HasKey(f => f.FixtureId);
 			modelBuilder.Entity<Fixture>().Property(f => f.FixtureId).HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
 			modelBuilder.Entity<Fixture>().HasRequired(f => f.CompetitionSeason).WithMany(cs => cs.Fixtures).HasForeignKey(f => f.CompetitionSeasonId).WillCascadeOnDelete(false);
 			modelBuilder.Entity<Fixture>().HasRequired(f => f.CompetitionSeasonRound).WithMany(csr => csr.Fixtures).HasForeignKey(f => f.CompetitionSeasonRoundId).WillCascadeOnDelete(false);
 			modelBuilder.Entity<TeamSeason>().HasMany(ts => ts.HomeFixtures).WithOptional(f => f.HomeTeamSeason).HasForeignKey(f => f.HomeTeamSeasonId).WillCascadeOnDelete(false);
 			modelBuilder.Entity<TeamSeason>().HasMany(ts => ts.AwayFixtures).WithOptional(f => f.AwayTeamSeason).HasForeignKey(f => f.AwayTeamSeasonId).WillCascadeOnDelete(false);
-			modelBuilder.Entity<Fixture>().HasOptional(f => f.Referee).WithMany(r => r.Fixtures).HasForeignKey(f => f.RefereeId).WillCascadeOnDelete(false);
 			modelBuilder.Entity<Fixture>().HasOptional(f => f.VenueSeason).WithMany(vs => vs.Fixtures).HasForeignKey(f => f.VenueSeasonId).WillCascadeOnDelete(false);
 		}
 	}
