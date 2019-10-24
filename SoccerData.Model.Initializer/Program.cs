@@ -10,20 +10,21 @@ namespace SoccerData.Model.Initializer
 		static void Main(string[] args)
 		{
 			Console.WriteLine("Hello World!");
-			using (var context = new SoccerDataContext())
-			{
-				var init = new SoccerDataContextInitializer();
-				init.InitializeDatabase(context);
+			var context = new SoccerDataContext();
+			context.Configuration.ValidateOnSaveEnabled = false;
 
-				var countriesProcessor = new CountriesProcessor();
-				countriesProcessor.Run(context);
-				context.SaveChanges();
+			var init = new SoccerDataContextInitializer();
+			init.InitializeDatabase(context);
 
-				var leaguesProcessor = new LeaguesProcessor();
-				leaguesProcessor.Run(context);
-				context.SaveChanges();
+			var countriesProcessor = new CountriesProcessor();
+			countriesProcessor.Run(context);
+			context.SaveChanges();
 
-				var desiredLeagueIds = new List<int>
+			var leaguesProcessor = new LeaguesProcessor();
+			leaguesProcessor.Run(context);
+			context.SaveChanges();
+
+			var desiredLeagueIds = new List<int>
 				{
 					751, 752, 51, 403,							// EURO CHAMPS
 					1, 749, 750,								// WORLD CUP
@@ -36,24 +37,38 @@ namespace SoccerData.Model.Initializer
 					521, 520, 519, 518, 522, 523				// USA - USL
 				};
 
-				var competitionSeasonIds = context.CompetitionSeasons
-													.Where(x => desiredLeagueIds.Contains(x.ApiFootballId))
-													.Select(x => x.CompetitionSeasonId)
-													.Distinct()
-													.OrderBy(x => x)
-													.ToList();
-				foreach (var competitionSeasonId in competitionSeasonIds)
+			var competitionSeasonIds = context.CompetitionSeasons
+												.Where(x => desiredLeagueIds.Contains(x.ApiFootballId))
+												.Select(x => x.CompetitionSeasonId)
+												.Distinct()
+												.OrderBy(x => x)
+												.ToList();
+
+			for (int i = 0; i < competitionSeasonIds.Count; i++)
+			{
+				int competitionSeasonId = competitionSeasonIds[i];
+
+				if (i % 10 == 9)
 				{
-					var teamsProcessor = new TeamsProcessor(competitionSeasonId);
-					teamsProcessor.Run(context);
-
-					var roundsProcessor = new CompetitionSeasonRoundsProcessor(competitionSeasonId);
-					roundsProcessor.Run(context);
-
-					context.SaveChanges();
+					context.Dispose();
+					context = new SoccerDataContext();
+					context.Configuration.ValidateOnSaveEnabled = false;
 				}
-				var a = 1;
+
+				var teamsProcessor = new TeamsProcessor(competitionSeasonId);
+				teamsProcessor.Run(context);
+
+				var roundsProcessor = new CompetitionSeasonRoundsProcessor(competitionSeasonId);
+				roundsProcessor.Run(context);
+
+				context.SaveChanges();
+
+				var leagueFixturesProcessor = new LeagueFixturesProcessor(competitionSeasonId);
+				leagueFixturesProcessor.Run(context);
+
+				context.SaveChanges();
 			}
+			var a = 1;
 		}
 	}
 }

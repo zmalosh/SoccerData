@@ -23,7 +23,7 @@ namespace SoccerData.Processors.ApiFootball
 			if (!CacheUtility.ReadFile(cachePath, out string rawJson, cacheTimeSeconds))
 			{
 				rawJson = WebClient.DownloadString(url);
-				if (cacheTimeSeconds.HasValue && cacheTimeSeconds.Value > 0)
+				if (!cacheTimeSeconds.HasValue || (cacheTimeSeconds.HasValue && cacheTimeSeconds.Value > 0))
 				{
 					CacheUtility.WriteFile(cachePath, rawJson);
 				}

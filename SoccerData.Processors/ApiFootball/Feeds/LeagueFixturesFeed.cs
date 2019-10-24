@@ -35,7 +35,7 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 			public int LeagueId { get; set; }
 
 			[JsonProperty("event_date")]
-			public DateTimeOffset EventDate { get; set; }
+			public DateTimeOffset? EventDate { get; set; }
 
 			[JsonIgnore]
 			public DateTimeOffset? EventTimestamp
@@ -134,25 +134,25 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 			public string Halftime { get { return string.IsNullOrEmpty(this._halftime) || this._halftime == "(null)" ? null : this._halftime; } }
 
 			[JsonProperty("halftime")]
-			public string _halftime { get; set; }
+			private string _halftime { get; set; }
 
 			[JsonIgnore]
 			public string Fulltime { get { return string.IsNullOrEmpty(this._fulltime) || this._fulltime == "(null)" ? null : this._fulltime; } }
 
 			[JsonProperty("fulltime")]
-			public string _fulltime { get; set; }
+			private string _fulltime { get; set; }
 
 			[JsonIgnore]
 			public string ExtraTime { get { return string.IsNullOrEmpty(this._extraTime) || this._extraTime == "(null)" ? null : this._extraTime; } }
 
 			[JsonProperty("extratime")]
-			public string _extraTime { get; set; }
+			private string _extraTime { get; set; }
 
 			[JsonIgnore]
 			public string Penalty { get { return string.IsNullOrEmpty(this._penalty) || this._penalty == "(null)" ? null : this._penalty; } }
 
 			[JsonProperty("penalty")]
-			public string _penalty { get; set; }
+			private string _penalty { get; set; }
 		}
 	}
 
