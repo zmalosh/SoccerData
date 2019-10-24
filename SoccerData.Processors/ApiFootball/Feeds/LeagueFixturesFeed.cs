@@ -38,22 +38,46 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 			public DateTimeOffset EventDate { get; set; }
 
 			[JsonIgnore]
-			public DateTime EventTimestamp { get { return DateTimeOffset.FromUnixTimeSeconds(this._eventTimestamp).UtcDateTime; } }
+			public DateTimeOffset? EventTimestamp
+			{
+				get
+				{
+					return this._firstHalfStart.HasValue
+							? DateTimeOffset.FromUnixTimeSeconds(this._eventTimestamp.Value)
+							: (DateTimeOffset?)null;
+				}
+			}
 
 			[JsonProperty("event_timestamp")]
-			private int _eventTimestamp { get; set; }
+			private int? _eventTimestamp { get; set; }
 
 			[JsonIgnore]
-			public DateTime FirstHalfStart { get { return DateTimeOffset.FromUnixTimeSeconds(this._firstHalfStart).UtcDateTime; } }
+			public DateTimeOffset? FirstHalfStart
+			{
+				get
+				{
+					return this._firstHalfStart.HasValue
+							? DateTimeOffset.FromUnixTimeSeconds(this._firstHalfStart.Value)
+							: (DateTimeOffset?)null;
+				}
+			}
 
 			[JsonProperty("firstHalfStart")]
-			private int _firstHalfStart { get; set; }
+			private int? _firstHalfStart { get; set; }
 
 			[JsonIgnore]
-			public DateTime SecondHalfStart { get { return DateTimeOffset.FromUnixTimeSeconds(this._secondHalfStart).UtcDateTime; } }
+			public DateTimeOffset? SecondHalfStart
+			{
+				get
+				{
+					return this._secondHalfStart.HasValue
+							? DateTimeOffset.FromUnixTimeSeconds(this._secondHalfStart.Value)
+							: (DateTimeOffset?)null;
+				}
+			}
 
 			[JsonProperty("secondHalfStart")]
-			private int _secondHalfStart { get; set; }
+			private int? _secondHalfStart { get; set; }
 
 			[JsonProperty("round")]
 			public string Round { get; set; }
@@ -65,7 +89,7 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 			public string StatusShort { get; set; }
 
 			[JsonProperty("elapsed")]
-			public int Elapsed { get; set; }
+			public int? Elapsed { get; set; }
 
 			[JsonProperty("venue")]
 			public string Venue { get; set; }
@@ -83,10 +107,10 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 			public Team AwayTeam { get; set; }
 
 			[JsonProperty("goalsHomeTeam")]
-			public int GoalsHomeTeam { get; set; }
+			public int? GoalsHomeTeam { get; set; }
 
 			[JsonProperty("goalsAwayTeam")]
-			public int GoalsAwayTeam { get; set; }
+			public int? GoalsAwayTeam { get; set; }
 
 			[JsonProperty("score")]
 			public Score Score { get; set; }

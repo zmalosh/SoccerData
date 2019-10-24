@@ -10,12 +10,12 @@ namespace SoccerData.Model
 		public int CompetitionSeasonId { get; set; }
 		public int? HomeTeamSeasonId { get; set; }
 		public int? AwayTeamSeasonId { get; set; }
-		public DateTime GameTimeUtc { get; set; }
+		public DateTime? GameTimeUtc { get; set; }
 		public int? HomeScore { get; set; }
 		public int? AwayScore { get; set; }
 		public string Status { get; set; }
 		public string StatusShort { get; set; }
-		public int TimeElapsed { get; set; }
+		public int? TimeElapsed { get; set; }
 		public int? RefereeId { get; set; }
 		public int? VenueSeasonId { get; set; }
 		public int? HomeHalfTimeScore { get; set; }
@@ -27,8 +27,8 @@ namespace SoccerData.Model
 		public int? HomePenaltiesScore { get; set; }
 		public int? AwayPenaltiesScore { get; set; }
 		public int CompetitionSeasonRoundId { get; set; }
-		public DateTime FirstHalfStartUtc { get; set; }
-		public DateTime SecondHalfStartUtc { get; set; }
+		public DateTime? FirstHalfStartUtc { get; set; }
+		public DateTime? SecondHalfStartUtc { get; set; }
 		public int ApiFootballId { get; set; }
 
 		public virtual CompetitionSeason CompetitionSeason { get; set; }
