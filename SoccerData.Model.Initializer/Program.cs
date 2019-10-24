@@ -46,6 +46,10 @@ namespace SoccerData.Model.Initializer
 				{
 					var teamsProcessor = new TeamsProcessor(competitionSeasonId);
 					teamsProcessor.Run(context);
+
+					var roundsProcessor = new CompetitionSeasonRoundsProcessor(competitionSeasonId);
+					roundsProcessor.Run(context);
+
 					context.SaveChanges();
 				}
 				var a = 1;

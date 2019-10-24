@@ -13,6 +13,7 @@ namespace SoccerData.Model
 		public DbSet<Country> Countries { get; set; }
 		public DbSet<Competition> Competitions { get; set; }
 		public DbSet<CompetitionSeason> CompetitionSeasons { get; set; }
+		public DbSet<CompetitionSeasonRound> CompetitionSeasonRounds { get; set; }
 		public DbSet<Venue> Venues { get; set; }
 		public DbSet<VenueSeason> VenueSeasons { get; set; }
 		public DbSet<Team> Teams { get; set; }
@@ -30,6 +31,10 @@ namespace SoccerData.Model
 			modelBuilder.Entity<CompetitionSeason>().HasKey(cs => cs.CompetitionSeasonId);
 			modelBuilder.Entity<CompetitionSeason>().Property(cs => cs.CompetitionSeasonId).HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
 			modelBuilder.Entity<CompetitionSeason>().HasRequired(cs => cs.Competition).WithMany(c => c.CompetitionSeasons).HasForeignKey(cs => cs.CompetitionId).WillCascadeOnDelete(false);
+
+			modelBuilder.Entity<CompetitionSeasonRound>().HasKey(csr => csr.CompetitionSeasonRoundId);
+			modelBuilder.Entity<CompetitionSeasonRound>().Property(csr => csr.CompetitionSeasonRoundId).HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
+			modelBuilder.Entity<CompetitionSeasonRound>().HasRequired(csr => csr.CompetitionSeason).WithMany(cs => cs.CompetitionSeasonRounds).HasForeignKey(csr => csr.CompetitionSeasonId).WillCascadeOnDelete(false);
 
 			modelBuilder.Entity<Venue>().HasKey(v => v.VenueId);
 			modelBuilder.Entity<Venue>().Property(v => v.VenueId).HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
