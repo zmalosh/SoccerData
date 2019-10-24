@@ -18,7 +18,6 @@ namespace SoccerData.Model
 		public DbSet<VenueSeason> VenueSeasons { get; set; }
 		public DbSet<Team> Teams { get; set; }
 		public DbSet<TeamSeason> TeamSeasons { get; set; }
-		public DbSet<Referee> Referees { get; set; }
 		public DbSet<Fixture> Fixtures { get; set; }
 
 		protected override void OnModelCreating(DbModelBuilder modelBuilder)
