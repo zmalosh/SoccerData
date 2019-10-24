@@ -12,5 +12,6 @@ namespace SoccerData.Model
 		public string ApiFootballKey { get; set; }
 
 		public virtual CompetitionSeason CompetitionSeason { get; set; }
+		public virtual ICollection<Fixture> Fixtures { get; set; }
 	}
 }

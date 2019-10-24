@@ -15,5 +15,6 @@ namespace SoccerData.Model
 
 		public virtual Venue Venue { get; set; }
 		public virtual ICollection<TeamSeason> TeamSeasons { get; set; }
+		public virtual ICollection<Fixture> Fixtures { get; set; }
 	}
 }
