@@ -14,18 +14,18 @@ namespace SoccerData.Processors.ApiFootball
 	{
 		private static readonly string ApiKey = File.ReadAllText("ApiFootball.key");
 		private static readonly WebClient WebClient = CreateWebClient();
-		private static readonly AzureUtility AzureUtility = new AzureUtility();
+		private static readonly ICacheUtility CacheUtility = new AzureUtility();
 
 		public static string GetRawJsonFromUrl(string url, int? cacheTimeSeconds = null)
 		{
 			string cachePath = GetCachePathFromUrl(url);
 
-			if (!AzureUtility.ReadFileFromAzure(cachePath, out string rawJson, cacheTimeSeconds))
+			if (!CacheUtility.ReadFile(cachePath, out string rawJson, cacheTimeSeconds))
 			{
 				rawJson = WebClient.DownloadString(url);
 				if (cacheTimeSeconds.HasValue && cacheTimeSeconds.Value > 0)
 				{
-					AzureUtility.WriteFileToAzure(cachePath, rawJson);
+					CacheUtility.WriteFile(cachePath, rawJson);
 				}
 			}
 

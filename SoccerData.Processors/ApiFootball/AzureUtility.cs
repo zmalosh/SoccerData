@@ -7,7 +7,7 @@ using System.Text;
 
 namespace SoccerData.Processors.ApiFootball
 {
-	public class AzureUtility
+	public class AzureUtility : ICacheUtility
 	{
 		private static CloudStorageAccount AzureStorage;
 		private static CloudFileClient AzureFileClient;
@@ -18,7 +18,7 @@ namespace SoccerData.Processors.ApiFootball
 			AzureUtility.SetupAzureUtility();
 		}
 
-		public bool ReadFileFromAzure(string path, out string text, int? cacheTimeSeconds = null)
+		public bool ReadFile(string path, out string text, int? cacheTimeSeconds = null)
 		{
 			CloudFile file = AzureRootDirectory.GetFileReference(path);
 			if (file.Exists())
@@ -40,7 +40,7 @@ namespace SoccerData.Processors.ApiFootball
 			return false;
 		}
 
-		public void WriteFileToAzure(string path, string text)
+		public void WriteFile(string path, string text)
 		{
 			var file = AzureRootDirectory.GetFileReference(path);
 			if (file.Exists())
