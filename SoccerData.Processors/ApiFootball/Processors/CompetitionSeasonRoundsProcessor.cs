@@ -31,7 +31,7 @@ namespace SoccerData.Processors.ApiFootball.Processors
 			var feed = Feeds.CompetitionSeasonRoundsFeed.FromJson(rawJson);
 
 			var dbRounds = dbCompetitionSeason.CompetitionSeasonRounds.ToList();
-			var feedRounds = feed.Result.Rounds.ToList();
+			var feedRounds = feed.Result.Rounds.Select(x => x.Replace('_', ' ')).ToList();
 			foreach (var feedRound in feedRounds)
 			{
 				var dbRound = dbRounds.SingleOrDefault(x => string.Equals(x.ApiFootballKey, feedRound, StringComparison.InvariantCultureIgnoreCase));
