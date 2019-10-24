@@ -16,14 +16,17 @@ namespace SoccerData.Processors.ApiFootball
 		private static readonly WebClient WebClient = CreateWebClient();
 		private static readonly AzureUtility AzureUtility = new AzureUtility();
 
-		public static string GetRawJsonFromUrl(string url)
+		public static string GetRawJsonFromUrl(string url, int? cacheTimeSeconds = null)
 		{
 			string cachePath = GetCachePathFromUrl(url);
 
-			if (!AzureUtility.ReadFileFromAzure(cachePath, out string rawJson))
+			if (!AzureUtility.ReadFileFromAzure(cachePath, out string rawJson, cacheTimeSeconds))
 			{
 				rawJson = WebClient.DownloadString(url);
-				AzureUtility.WriteFileToAzure(cachePath, rawJson);
+				if (cacheTimeSeconds.HasValue && cacheTimeSeconds.Value > 0)
+				{
+					AzureUtility.WriteFileToAzure(cachePath, rawJson);
+				}
 			}
 
 			return rawJson;

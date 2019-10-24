@@ -18,13 +18,23 @@ namespace SoccerData.Processors.ApiFootball
 			AzureUtility.SetupAzureUtility();
 		}
 
-		public bool ReadFileFromAzure(string path, out string text)
+		public bool ReadFileFromAzure(string path, out string text, int? cacheTimeSeconds = null)
 		{
 			CloudFile file = AzureRootDirectory.GetFileReference(path);
 			if (file.Exists())
 			{
-				text = file.DownloadText();
-				return true;
+				bool isExpired = !cacheTimeSeconds.HasValue;
+				if (cacheTimeSeconds.HasValue)
+				{
+					file.FetchAttributes();
+					var expirationTime = file.Properties.LastModified.Value.LocalDateTime.AddSeconds(cacheTimeSeconds.Value);
+					isExpired = expirationTime < DateTime.Now;
+				}
+				if (!isExpired)
+				{
+					text = file.DownloadText();
+					return true;
+				}
 			}
 			text = null;
 			return false;
@@ -33,10 +43,11 @@ namespace SoccerData.Processors.ApiFootball
 		public void WriteFileToAzure(string path, string text)
 		{
 			var file = AzureRootDirectory.GetFileReference(path);
-			if (!file.Exists())
+			if (file.Exists())
 			{
-				file.UploadText(text);
+				file.Delete();
 			}
+			file.UploadText(text);
 		}
 
 		private static void SetupAzureUtility()
