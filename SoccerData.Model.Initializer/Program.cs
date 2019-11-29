@@ -13,16 +13,22 @@ namespace SoccerData.Model.Initializer
 			var context = new SoccerDataContext();
 			context.Configuration.ValidateOnSaveEnabled = false;
 
-			var init = new SoccerDataContextInitializer();
-			init.InitializeDatabase(context);
+			//var init = new SoccerDataContextInitializer();
+			//init.InitializeDatabase(context);
 
 			var countriesProcessor = new CountriesProcessor();
+			Console.WriteLine("START COUNTRIES");
 			countriesProcessor.Run(context);
+			Console.WriteLine("SAVE COUNTRIES");
 			context.SaveChanges();
+			Console.WriteLine("END COUNTRIES");
 
 			var leaguesProcessor = new LeaguesProcessor();
+			Console.WriteLine("START LEAGUES");
 			leaguesProcessor.Run(context);
+			Console.WriteLine("SAVE LEAGUES");
 			context.SaveChanges();
+			Console.WriteLine("END LEAGUES");
 
 			var desiredLeagueIds = new List<int>
 				{
@@ -36,6 +42,13 @@ namespace SoccerData.Model.Initializer
 					201, 200, 199, 294,							// USA - MLS
 					521, 520, 519, 518, 522, 523				// USA - USL
 				};
+			desiredLeagueIds = new List<int>
+				{
+					1, 749, 750,								// WORLD CUP
+					64, 30, 87,									// ESP - LA LIGA
+					808, 973,									// ESP - COPA DEL REY
+					200, 199, 294,								// USA - MLS
+				};
 
 			var competitionSeasonIds = context.CompetitionSeasons
 												.Where(x => desiredLeagueIds.Contains(x.ApiFootballId))
@@ -46,10 +59,12 @@ namespace SoccerData.Model.Initializer
 
 			for (int i = 0; i < competitionSeasonIds.Count; i++)
 			{
+				Console.WriteLine($"START LEAGUE {i+1} OF {competitionSeasonIds.Count}");
 				int competitionSeasonId = competitionSeasonIds[i];
 
 				if (i % 10 == 9)
 				{
+					Console.WriteLine("NEW CONTEXT");
 					context.Dispose();
 					context = new SoccerDataContext();
 					context.Configuration.ValidateOnSaveEnabled = false;
