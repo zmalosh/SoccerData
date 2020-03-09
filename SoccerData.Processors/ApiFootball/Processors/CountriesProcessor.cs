@@ -27,8 +27,6 @@ namespace SoccerData.Processors.ApiFootball.Processors
 												.ToList();
 
 			var existingCountries = dbContext.Countries.ToDictionary(x => x.CountryAbbr ?? "(null)");
-
-			bool hasUpdates = false;
 			foreach (var country in orderedCountries)
 			{
 				if (!existingCountries.ContainsKey(country.Code ?? "(null)"))
@@ -40,15 +38,10 @@ namespace SoccerData.Processors.ApiFootball.Processors
 						FlagUrl = country.Flag?.ToString(),
 						ApiFootballCountryName = country.CountryName
 					};
-					hasUpdates = true;
 					existingCountries.Add(country.Code ?? "(null)", dbCountry);
 					dbContext.Countries.Add(dbCountry);
+					dbContext.SaveChanges();
 				}
-			}
-
-			if (hasUpdates)
-			{
-				dbContext.SaveChanges();
 			}
 		}
 	}
