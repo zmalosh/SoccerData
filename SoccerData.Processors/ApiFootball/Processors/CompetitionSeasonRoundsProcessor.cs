@@ -15,7 +15,7 @@ namespace SoccerData.Processors.ApiFootball.Processors
 		public CompetitionSeasonRoundsProcessor(int competitionSeasonId)
 		{
 			this.CompetitionSeasonId = competitionSeasonId;
-			this.JsonUtility = new JsonUtility(24 * 60 * 60);
+			this.JsonUtility = new JsonUtility(24 * 60 * 60, sourceType: JsonUtility.JsonSourceType.ApiFootball);
 		}
 
 		public void Run(SoccerDataContext dbContext)
@@ -34,6 +34,8 @@ namespace SoccerData.Processors.ApiFootball.Processors
 
 			var dbRounds = dbCompetitionSeason.CompetitionSeasonRounds.ToList();
 			var feedRounds = feed.Result.Rounds.Select(x => x.Replace('_', ' ')).ToList();
+
+			bool hasUpdates = false;
 			foreach (var feedRound in feedRounds)
 			{
 				var dbRound = dbRounds.SingleOrDefault(x => string.Equals(x.ApiFootballKey, feedRound, StringComparison.InvariantCultureIgnoreCase));
@@ -45,9 +47,16 @@ namespace SoccerData.Processors.ApiFootball.Processors
 						RoundName = feedRound,
 						ApiFootballKey = feedRound
 					};
+
+					hasUpdates = true;
 					dbRounds.Add(dbRound);
 					dbContext.CompetitionSeasonRounds.Add(dbRound);
 				}
+			}
+
+			if (hasUpdates)
+			{
+				dbContext.SaveChanges();
 			}
 		}
 	}

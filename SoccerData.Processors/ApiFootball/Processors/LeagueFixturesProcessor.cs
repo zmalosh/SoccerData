@@ -15,13 +15,12 @@ namespace SoccerData.Processors.ApiFootball.Processors
 		public LeagueFixturesProcessor(int competitionSeasonId)
 		{
 			this.CompetitionSeasonId = competitionSeasonId;
-			this.JsonUtility = new JsonUtility(24 * 60 * 60);
+			this.JsonUtility = new JsonUtility(24 * 60 * 60, sourceType: JsonUtility.JsonSourceType.ApiFootball);
 		}
 
 		public void Run(SoccerDataContext dbContext)
 		{
 			var dbCompetitionSeason = dbContext.CompetitionSeasons
-												.Include(x => x.TeamSeasons.Select(y => y.Team))
 												.Include(x => x.CompetitionSeasonRounds)
 												.Include(x => x.Fixtures)
 												.SingleOrDefault(x => x.CompetitionSeasonId == this.CompetitionSeasonId);
@@ -36,8 +35,9 @@ namespace SoccerData.Processors.ApiFootball.Processors
 			var rawJson = JsonUtility.GetRawJsonFromUrl(url);
 			var feed = Feeds.LeagueFixturesFeed.FromJson(rawJson);
 
+			var teamIds = feed.Result.Fixtures.SelectMany(x => new[] { x.AwayTeam.TeamId, x.HomeTeam.TeamId }).Distinct().ToList();
 			var fixtureDict = dbCompetitionSeason.Fixtures.ToDictionary(x => x.ApiFootballId);
-			var teamDict = dbCompetitionSeason.TeamSeasons.ToDictionary(x => x.Team.ApiFootballId, y => y.TeamSeasonId);
+			var teamDict = dbContext.TeamSeasons.Where(x => x.CompetitionSeasonId == this.CompetitionSeasonId && teamIds.Contains(x.Team.ApiFootballId)).ToDictionary(x => x.Team.ApiFootballId, y => y.TeamSeasonId);
 			var venueDict = dbContext.VenueSeasons.Where(x => x.Season == dbCompetitionSeason.Season).ToList();
 			var roundDict = dbCompetitionSeason.CompetitionSeasonRounds.ToDictionary(x => x.ApiFootballKey, y => y.CompetitionSeasonRoundId);
 
@@ -181,6 +181,7 @@ namespace SoccerData.Processors.ApiFootball.Processors
 					dbFixture.Referee = feedFixture.Referee;
 				}
 			}
+			dbContext.SaveChanges();
 		}
 	}
 }

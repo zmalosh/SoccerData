@@ -14,6 +14,19 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SoccerData.Model\SoccerData.Model.csproj" />
+    <ProjectReference Include="..\SoccerData.Processors\SoccerData.Processors.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="ApiFootball.key">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AzureStorageConnectionString.key">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

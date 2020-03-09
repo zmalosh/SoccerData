@@ -14,14 +14,10 @@ namespace SoccerData.Processors.ApiFootball.Processors
 
 		private const string WorldCountryName = "WORLD";
 
-		public TeamsProcessor()
-		{
-			this.JsonUtility = new JsonUtility(7 * 24 * 60 * 60);
-		}
-
 		public TeamsProcessor(int competitionSeasonId)
 		{
 			this.CompetitionSeasonId = competitionSeasonId;
+			this.JsonUtility = new JsonUtility(7 * 24 * 60 * 60, sourceType: JsonUtility.JsonSourceType.ApiFootball);
 		}
 
 		public void Run(SoccerDataContext dbContext)
@@ -35,7 +31,7 @@ namespace SoccerData.Processors.ApiFootball.Processors
 			Console.WriteLine($"{dbCompetitionSeason.CompetitionSeasonId}-{dbCompetitionSeason.Season}-{dbCompetitionSeason.Competition.CompetitionName}");
 
 			var url = Feeds.TeamsFeed.GetFeedUrlByLeagueId(dbCompetitionSeason.ApiFootballId);
-			var rawJson = JsonUtility.GetRawJsonFromUrl(url);
+			var rawJson = this.JsonUtility.GetRawJsonFromUrl(url);
 			var feed = Feeds.TeamsFeed.FromJson(rawJson);
 
 			var teamDict = dbContext.Teams.Include(x => x.TeamSeasons).ToDictionary(x => x.ApiFootballId);
@@ -49,6 +45,7 @@ namespace SoccerData.Processors.ApiFootball.Processors
 
 			var feedTeams = feed.Result.Teams.OrderBy(x => x.Name).ToList();
 
+			bool hasUpdates = false;
 			foreach (var feedTeam in feed.Result.Teams)
 			{
 				Venue dbVenue = null;
@@ -107,6 +104,7 @@ namespace SoccerData.Processors.ApiFootball.Processors
 						YearFounded = feedTeam.Founded,
 						TeamSeasons = new List<TeamSeason>()
 					};
+					hasUpdates = true;
 					teamDict.Add(feedTeam.TeamId, dbTeam);
 					dbContext.Teams.Add(dbTeam);
 				}
@@ -132,8 +130,14 @@ namespace SoccerData.Processors.ApiFootball.Processors
 						TeamName = feedTeam.Name,
 						VenueSeason = dbVenueSeason
 					};
+					hasUpdates = true;
 					dbTeam.TeamSeasons.Add(dbTeamSeason);
 				}
+			}
+
+			if (hasUpdates)
+			{
+				dbContext.SaveChanges();
 			}
 		}
 

@@ -12,7 +12,7 @@ namespace SoccerData.Processors.ApiFootball.Processors
 
 		public CountriesProcessor()
 		{
-			this.JsonUtility = new JsonUtility(7 * 24 * 60 * 60);
+			this.JsonUtility = new JsonUtility(7 * 24 * 60 * 60, sourceType: JsonUtility.JsonSourceType.ApiFootball);
 		}
 
 		public void Run(SoccerDataContext dbContext)
@@ -28,6 +28,7 @@ namespace SoccerData.Processors.ApiFootball.Processors
 
 			var existingCountries = dbContext.Countries.ToDictionary(x => x.CountryAbbr ?? "(null)");
 
+			bool hasUpdates = false;
 			foreach (var country in orderedCountries)
 			{
 				if (!existingCountries.ContainsKey(country.Code ?? "(null)"))
@@ -39,9 +40,15 @@ namespace SoccerData.Processors.ApiFootball.Processors
 						FlagUrl = country.Flag?.ToString(),
 						ApiFootballCountryName = country.CountryName
 					};
+					hasUpdates = true;
 					existingCountries.Add(country.Code ?? "(null)", dbCountry);
 					dbContext.Countries.Add(dbCountry);
 				}
+			}
+
+			if (hasUpdates)
+			{
+				dbContext.SaveChanges();
 			}
 		}
 	}

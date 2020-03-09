@@ -9,13 +9,20 @@ namespace SoccerData.Processors
 {
 	public class JsonUtility
 	{
-		private static readonly WebClient WebClient = CreateWebClient();
-		private const string AzureContainerName = "cache";
+		private static readonly string ApiFootballApiKey = File.ReadAllText("ApiFootball.key");
+		private const string AzureContainerName = "apifootballcache";
 
 		private readonly ICacheUtility CacheUtility;
 		private readonly int? CacheTimeSeconds;
+		private readonly WebClient WebClient;
 
-		public JsonUtility(int? cacheTimeSeconds = null)
+		public enum JsonSourceType
+		{
+			Unauthenticated = 0,
+			ApiFootball = 1
+		}
+
+		public JsonUtility(int? cacheTimeSeconds = null, JsonSourceType sourceType = JsonSourceType.Unauthenticated)
 		{
 			this.CacheTimeSeconds = cacheTimeSeconds;
 			if (!cacheTimeSeconds.HasValue || cacheTimeSeconds.Value == 0)
@@ -26,6 +33,8 @@ namespace SoccerData.Processors
 			{
 				this.CacheUtility = new AzureUtility(AzureContainerName);
 			}
+
+			this.WebClient = this.CreateWebClient(sourceType);
 		}
 
 		public string GetRawJsonFromUrl(string url)
@@ -58,9 +67,14 @@ namespace SoccerData.Processors
 			return path;
 		}
 
-		private static WebClient CreateWebClient()
+		private WebClient CreateWebClient(JsonSourceType sourceType)
 		{
 			var client = new WebClient();
+			if (sourceType == JsonSourceType.ApiFootball)
+			{
+				client.Headers.Add("x-rapidapi-host", "api-football-v1.p.rapidapi.com");
+				client.Headers.Add("x-rapidapi-key", ApiFootballApiKey);
+			}
 			return client;
 		}
 	}
