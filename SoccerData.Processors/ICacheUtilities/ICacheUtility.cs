@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace SoccerData.Processors
+namespace SoccerData.Processors.ICacheUtilities
 {
 	public interface ICacheUtility
 	{

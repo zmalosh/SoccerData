@@ -8,6 +8,13 @@ namespace SoccerData.Processors.ApiFootball.Processors
 {
 	public class LeaguesProcessor : IProcessor
 	{
+		private readonly JsonUtility JsonUtility;
+
+		public LeaguesProcessor()
+		{
+			this.JsonUtility = new JsonUtility(24 * 60 * 60);
+		}
+
 		public void Run(SoccerDataContext dbContext)
 		{
 			var url = Feeds.LeaguesFeed.GetFeedUrl();

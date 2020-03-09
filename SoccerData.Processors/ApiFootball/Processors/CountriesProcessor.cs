@@ -8,6 +8,13 @@ namespace SoccerData.Processors.ApiFootball.Processors
 {
 	public class CountriesProcessor : IProcessor
 	{
+		private readonly JsonUtility JsonUtility;
+
+		public CountriesProcessor()
+		{
+			this.JsonUtility = new JsonUtility(7 * 24 * 60 * 60);
+		}
+
 		public void Run(SoccerDataContext dbContext)
 		{
 			var url = Feeds.CountriesFeed.GetFeedUrl();

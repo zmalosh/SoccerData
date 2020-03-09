@@ -10,10 +10,12 @@ namespace SoccerData.Processors.ApiFootball.Processors
 	public class CompetitionSeasonRoundsProcessor : IProcessor
 	{
 		private int CompetitionSeasonId { get; set; }
+		private readonly JsonUtility JsonUtility;
 
 		public CompetitionSeasonRoundsProcessor(int competitionSeasonId)
 		{
 			this.CompetitionSeasonId = competitionSeasonId;
+			this.JsonUtility = new JsonUtility(24 * 60 * 60);
 		}
 
 		public void Run(SoccerDataContext dbContext)

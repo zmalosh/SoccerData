@@ -10,8 +10,14 @@ namespace SoccerData.Processors.ApiFootball.Processors
 	public class TeamsProcessor : IProcessor
 	{
 		private int CompetitionSeasonId;
+		private readonly JsonUtility JsonUtility;
 
 		private const string WorldCountryName = "WORLD";
+
+		public TeamsProcessor()
+		{
+			this.JsonUtility = new JsonUtility(7 * 24 * 60 * 60);
+		}
 
 		public TeamsProcessor(int competitionSeasonId)
 		{
@@ -36,7 +42,7 @@ namespace SoccerData.Processors.ApiFootball.Processors
 			var venueDict = dbContext.Venues.Include(x => x.VenueSeasons)
 											.ToDictionary(x => GetVenueKey(x.VenueName, x.VenueAddress));
 
-			var worldCountryId = dbContext.Countries.Single(x => x.CountryName.ToUpper() == "WORLD").CountryId;
+			var worldCountryId = dbContext.Countries.Single(x => x.CountryName.ToUpper() == WorldCountryName).CountryId;
 
 			int competitionSeasonId = dbCompetitionSeason.CompetitionSeasonId;
 			int competitionCountryId = dbCompetitionSeason.Competition?.CountryId ?? worldCountryId;

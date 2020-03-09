@@ -10,10 +10,12 @@ namespace SoccerData.Processors.ApiFootball.Processors
 	public class LeagueFixturesProcessor : IProcessor
 	{
 		private int CompetitionSeasonId;
+		private readonly JsonUtility JsonUtility;
 
 		public LeagueFixturesProcessor(int competitionSeasonId)
 		{
 			this.CompetitionSeasonId = competitionSeasonId;
+			this.JsonUtility = new JsonUtility(24 * 60 * 60);
 		}
 
 		public void Run(SoccerDataContext dbContext)
