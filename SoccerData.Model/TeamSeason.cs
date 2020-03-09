@@ -4,7 +4,7 @@ using System.Text;
 
 namespace SoccerData.Model
 {
-	public class TeamSeason
+	public class TeamSeason : IEntity
 	{
 		public int TeamSeasonId { get; set; }
 		public int TeamId { get; set; }
@@ -13,6 +13,8 @@ namespace SoccerData.Model
 		public string TeamName { get; set; }
 		public int? VenueSeasonId { get; set; }
 		public string LogoUrl { get; set; }
+		public DateTime DateLastModifiedUtc { get; set; }
+		public DateTime DateCreatedUtc { get; set; }
 
 		public virtual Team Team { get; set; }
 		public virtual CompetitionSeason CompetitionSeason { get; set; }

@@ -1,7 +1,10 @@
-﻿using SoccerData.Processors.ApiFootball.Processors;
+﻿using Microsoft.Extensions.Configuration;
+using SoccerData.Processors.ApiFootball.Processors;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 
 namespace SoccerData.Model.Initializer
 {
@@ -10,8 +13,9 @@ namespace SoccerData.Model.Initializer
 		static void Main(string[] args)
 		{
 			Console.WriteLine("Hello World!");
-			var context = new SoccerDataContext();
-			context.Configuration.ValidateOnSaveEnabled = false;
+			var config = GetConfig();
+
+			var context = new SoccerDataContext(config);
 
 			//var init = new SoccerDataContextInitializer();
 			//init.InitializeDatabase(context);
@@ -66,8 +70,7 @@ namespace SoccerData.Model.Initializer
 				{
 					Console.WriteLine("NEW CONTEXT");
 					context.Dispose();
-					context = new SoccerDataContext();
-					context.Configuration.ValidateOnSaveEnabled = false;
+					context = new SoccerDataContext(config);
 				}
 
 				var teamsProcessor = new TeamsProcessor(competitionSeasonId);
@@ -84,6 +87,16 @@ namespace SoccerData.Model.Initializer
 				context.SaveChanges();
 			}
 			var a = 1;
+		}
+
+		static protected IConfiguration GetConfig()
+		{
+			var builder = new ConfigurationBuilder()
+				.SetBasePath(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))
+				.AddJsonFile("appsettings.json");
+
+			var config = builder.Build();
+			return config;
 		}
 	}
 }

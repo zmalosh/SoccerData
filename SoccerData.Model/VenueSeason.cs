@@ -4,7 +4,7 @@ using System.Text;
 
 namespace SoccerData.Model
 {
-	public class VenueSeason
+	public class VenueSeason : IEntity
 	{
 		public int VenueSeasonId { get; set; }
 		public int VenueId { get; set; }
@@ -12,6 +12,8 @@ namespace SoccerData.Model
 		public string VenueName { get; set; }
 		public int? Capacity { get; set; }
 		public string SurfaceType { get; set; }
+		public DateTime DateLastModifiedUtc { get; set; }
+		public DateTime DateCreatedUtc { get; set; }
 
 		public virtual Venue Venue { get; set; }
 		public virtual ICollection<TeamSeason> TeamSeasons { get; set; }

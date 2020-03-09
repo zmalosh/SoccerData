@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Text;
 
 namespace SoccerData.Model.Initializer
 {
-	public class SoccerDataContextInitializer : DropCreateDatabaseAlways<SoccerDataContext>
+	public class SoccerDataContextInitializer
 	{
-		protected override void Seed(SoccerDataContext context)
+		protected void Seed(SoccerDataContext context)
 		{
-			base.Seed(context);
 		}
 	}
 }

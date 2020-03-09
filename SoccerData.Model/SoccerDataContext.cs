@@ -1,14 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Text;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using System;
+using Microsoft.EntityFrameworkCore;
 
 namespace SoccerData.Model
 {
 	public class SoccerDataContext : DbContext
 	{
-		public SoccerDataContext() : base("SoccerDataContext") { }
+		private readonly IConfiguration config;
+
+		public SoccerDataContext(IConfiguration config) : base()
+		{
+			this.config = config;
+			this.ChangeTracker.Tracked += OnEntityTracked;
+			this.ChangeTracker.StateChanged += OnEntityStateChanged;
+		}
+
+		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+		{
+			//IConfigurationRoot configuration = new ConfigurationBuilder()
+			//	.SetBasePath(Directory.GetCurrentDirectory())
+			//	.AddJsonFile("appsettings.json")
+			//	.Build();
+			var connectionString = this.config["SoccerDataContextConnectionString"];
+			optionsBuilder.UseSqlServer(connectionString);
+		}
+
 
 		public DbSet<Country> Countries { get; set; }
 		public DbSet<Competition> Competitions { get; set; }
@@ -20,47 +37,89 @@ namespace SoccerData.Model
 		public DbSet<TeamSeason> TeamSeasons { get; set; }
 		public DbSet<Fixture> Fixtures { get; set; }
 
-		protected override void OnModelCreating(DbModelBuilder modelBuilder)
+		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
-			modelBuilder.Entity<Country>().HasKey(c => c.CountryId);
-			modelBuilder.Entity<Country>().Property(c => c.CountryAbbr).HasMaxLength(2);
+			modelBuilder.Entity<Country>(e =>
+			{
+				e.HasKey(c => c.CountryId);
+				e.Property(c => c.CountryAbbr).HasMaxLength(2);
+			});
 
-			modelBuilder.Entity<Competition>().HasKey(c => c.CompetitionId);
-			modelBuilder.Entity<Competition>().Property(c => c.CompetitionId).HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
-			modelBuilder.Entity<Competition>().HasRequired(c => c.Country).WithMany(c => c.Competitions).HasForeignKey(c => c.CountryId).WillCascadeOnDelete(false);
+			modelBuilder.Entity<Competition>(e =>
+			{
+				e.HasKey(c => c.CompetitionId);
+				e.HasOne(c => c.Country).WithMany(c => c.Competitions).HasForeignKey(c => c.CountryId).OnDelete(DeleteBehavior.ClientNoAction);
+			});
 
-			modelBuilder.Entity<CompetitionSeason>().HasKey(cs => cs.CompetitionSeasonId);
-			modelBuilder.Entity<CompetitionSeason>().Property(cs => cs.CompetitionSeasonId).HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
-			modelBuilder.Entity<CompetitionSeason>().HasRequired(cs => cs.Competition).WithMany(c => c.CompetitionSeasons).HasForeignKey(cs => cs.CompetitionId).WillCascadeOnDelete(false);
+			modelBuilder.Entity<Competition>(e =>
+			{
+				e.HasKey(c => c.CompetitionId);
+				e.HasOne(c => c.Country).WithMany(c => c.Competitions).HasForeignKey(c => c.CountryId).OnDelete(DeleteBehavior.ClientNoAction);
+			});
 
-			modelBuilder.Entity<CompetitionSeasonRound>().HasKey(csr => csr.CompetitionSeasonRoundId);
-			modelBuilder.Entity<CompetitionSeasonRound>().Property(csr => csr.CompetitionSeasonRoundId).HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
-			modelBuilder.Entity<CompetitionSeasonRound>().HasRequired(csr => csr.CompetitionSeason).WithMany(cs => cs.CompetitionSeasonRounds).HasForeignKey(csr => csr.CompetitionSeasonId).WillCascadeOnDelete(false);
+			modelBuilder.Entity<CompetitionSeason>(e =>
+			{
+				e.HasKey(cs => cs.CompetitionSeasonId);
+				e.HasOne(cs => cs.Competition).WithMany(c => c.CompetitionSeasons).HasForeignKey(cs => cs.CompetitionId).OnDelete(DeleteBehavior.ClientNoAction);
+			});
 
-			modelBuilder.Entity<Venue>().HasKey(v => v.VenueId);
-			modelBuilder.Entity<Venue>().Property(v => v.VenueId).HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
+			modelBuilder.Entity<CompetitionSeasonRound>(e =>
+			{
+				e.HasKey(csr => csr.CompetitionSeasonRoundId);
+				e.HasOne(csr => csr.CompetitionSeason).WithMany(cs => cs.CompetitionSeasonRounds).HasForeignKey(csr => csr.CompetitionSeasonId).OnDelete(DeleteBehavior.ClientNoAction);
+			});
 
-			modelBuilder.Entity<VenueSeason>().HasKey(vs => vs.VenueSeasonId);
-			modelBuilder.Entity<VenueSeason>().Property(vs => vs.VenueSeasonId).HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
-			modelBuilder.Entity<VenueSeason>().HasRequired(vs => vs.Venue).WithMany(v => v.VenueSeasons).HasForeignKey(vs => vs.VenueId).WillCascadeOnDelete(false);
+			modelBuilder.Entity<Venue>(e =>
+			{
+				e.HasKey(v => v.VenueId);
+			});
 
-			modelBuilder.Entity<Team>().HasKey(t => t.TeamId);
-			modelBuilder.Entity<Team>().Property(t => t.TeamId).HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
-			modelBuilder.Entity<Team>().HasRequired(t => t.Country).WithMany(c => c.Teams).HasForeignKey(t => t.CountryId).WillCascadeOnDelete(false);
+			modelBuilder.Entity<VenueSeason>(e =>
+			{
+				e.HasKey(vs => vs.VenueSeasonId);
+				e.HasOne(vs => vs.Venue).WithMany(v => v.VenueSeasons).HasForeignKey(vs => vs.VenueId).OnDelete(DeleteBehavior.ClientNoAction);
+			});
 
-			modelBuilder.Entity<TeamSeason>().HasKey(ts => ts.TeamSeasonId);
-			modelBuilder.Entity<TeamSeason>().Property(ts => ts.TeamSeasonId).HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
-			modelBuilder.Entity<TeamSeason>().HasRequired(ts => ts.Team).WithMany(t => t.TeamSeasons).HasForeignKey(ts => ts.TeamId).WillCascadeOnDelete(false);
-			modelBuilder.Entity<TeamSeason>().HasRequired(ts => ts.CompetitionSeason).WithMany(cs => cs.TeamSeasons).HasForeignKey(ts => ts.CompetitionSeasonId).WillCascadeOnDelete(false);
-			modelBuilder.Entity<TeamSeason>().HasOptional(ts => ts.VenueSeason).WithMany(vs => vs.TeamSeasons).HasForeignKey(ts => ts.VenueSeasonId).WillCascadeOnDelete(false);
+			modelBuilder.Entity<Team>(e =>
+			{
+				e.HasKey(t => t.TeamId);
+				e.HasOne(t => t.Country).WithMany(c => c.Teams).HasForeignKey(t => t.CountryId).OnDelete(DeleteBehavior.ClientNoAction);
+			});
 
-			modelBuilder.Entity<Fixture>().HasKey(f => f.FixtureId);
-			modelBuilder.Entity<Fixture>().Property(f => f.FixtureId).HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
-			modelBuilder.Entity<Fixture>().HasRequired(f => f.CompetitionSeason).WithMany(cs => cs.Fixtures).HasForeignKey(f => f.CompetitionSeasonId).WillCascadeOnDelete(false);
-			modelBuilder.Entity<Fixture>().HasRequired(f => f.CompetitionSeasonRound).WithMany(csr => csr.Fixtures).HasForeignKey(f => f.CompetitionSeasonRoundId).WillCascadeOnDelete(false);
-			modelBuilder.Entity<TeamSeason>().HasMany(ts => ts.HomeFixtures).WithOptional(f => f.HomeTeamSeason).HasForeignKey(f => f.HomeTeamSeasonId).WillCascadeOnDelete(false);
-			modelBuilder.Entity<TeamSeason>().HasMany(ts => ts.AwayFixtures).WithOptional(f => f.AwayTeamSeason).HasForeignKey(f => f.AwayTeamSeasonId).WillCascadeOnDelete(false);
-			modelBuilder.Entity<Fixture>().HasOptional(f => f.VenueSeason).WithMany(vs => vs.Fixtures).HasForeignKey(f => f.VenueSeasonId).WillCascadeOnDelete(false);
+			modelBuilder.Entity<Fixture>(e =>
+			{
+				e.HasKey(f => f.FixtureId);
+				e.HasOne(f => f.CompetitionSeason).WithMany(cs => cs.Fixtures).HasForeignKey(f => f.CompetitionSeasonId).OnDelete(DeleteBehavior.ClientNoAction);
+				e.HasOne(f => f.CompetitionSeasonRound).WithMany(csr => csr.Fixtures).HasForeignKey(f => f.CompetitionSeasonRoundId).OnDelete(DeleteBehavior.ClientNoAction);
+				e.HasOne(f => f.VenueSeason).WithMany(vs => vs.Fixtures).HasForeignKey(f => f.VenueSeasonId).OnDelete(DeleteBehavior.ClientNoAction);
+			});
+
+			modelBuilder.Entity<TeamSeason>(e =>
+			{
+				e.HasKey(ts => ts.TeamSeasonId);
+				e.HasOne(ts => ts.Team).WithMany(t => t.TeamSeasons).HasForeignKey(ts => ts.TeamId).OnDelete(DeleteBehavior.ClientNoAction);
+				e.HasOne(ts => ts.CompetitionSeason).WithMany(cs => cs.TeamSeasons).HasForeignKey(ts => ts.CompetitionSeasonId).OnDelete(DeleteBehavior.ClientNoAction);
+				e.HasOne(ts => ts.VenueSeason).WithMany(vs => vs.TeamSeasons).HasForeignKey(ts => ts.VenueSeasonId).OnDelete(DeleteBehavior.ClientNoAction);
+				e.HasMany(ts => ts.HomeFixtures).WithOne(f => f.HomeTeamSeason).HasForeignKey(f => f.HomeTeamSeasonId).OnDelete(DeleteBehavior.ClientNoAction);
+				e.HasMany(ts => ts.AwayFixtures).WithOne(f => f.AwayTeamSeason).HasForeignKey(f => f.AwayTeamSeasonId).OnDelete(DeleteBehavior.ClientNoAction);
+			});
+		}
+
+		void OnEntityTracked(object sender, EntityTrackedEventArgs e)
+		{
+			if (!e.FromQuery && e.Entry.State == EntityState.Added && e.Entry.Entity is IEntity entity)
+			{
+				entity.DateCreatedUtc = DateTime.UtcNow;
+				entity.DateLastModifiedUtc = DateTime.UtcNow;
+			}
+		}
+
+		void OnEntityStateChanged(object sender, EntityStateChangedEventArgs e)
+		{
+			if (e.NewState == EntityState.Modified && e.Entry.Entity is IEntity entity)
+			{
+				entity.DateLastModifiedUtc = DateTime.UtcNow;
+			}
 		}
 	}
 }

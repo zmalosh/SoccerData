@@ -4,7 +4,7 @@ using System.Text;
 
 namespace SoccerData.Model
 {
-	public class CompetitionSeason
+	public class CompetitionSeason : IEntity
 	{
 		public int CompetitionSeasonId { get; set; }
 		public int CompetitionId { get; set; }
@@ -22,6 +22,8 @@ namespace SoccerData.Model
 		public bool HasStandings { get; set; }
 		public bool HasTopScorers { get; set; }
 		public int ApiFootballId { get; set; }
+		public DateTime DateLastModifiedUtc { get; set; }
+		public DateTime DateCreatedUtc { get; set; }
 
 		public virtual Competition Competition { get; set; }
 		public virtual ICollection<TeamSeason> TeamSeasons { get; set; }

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace SoccerData.Model
 {
-	public class Venue
+	public class Venue : IEntity
 	{
 		public int VenueId { get; set; }
 		public string VenueName { get; set; }
@@ -13,6 +13,8 @@ namespace SoccerData.Model
 		public string VenueCity { get; set; }
 		public string VenueAddress { get; set; }
 		public string VenueNation { get; set; }
+		public DateTime DateLastModifiedUtc { get; set; }
+		public DateTime DateCreatedUtc { get; set; }
 
 		public virtual ICollection<VenueSeason> VenueSeasons { get; set; }
 	}
