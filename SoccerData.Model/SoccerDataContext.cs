@@ -36,6 +36,7 @@ namespace SoccerData.Model
 		public DbSet<Team> Teams { get; set; }
 		public DbSet<TeamSeason> TeamSeasons { get; set; }
 		public DbSet<Fixture> Fixtures { get; set; }
+		public DbSet<Player> Players { get; set; }
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
@@ -92,6 +93,19 @@ namespace SoccerData.Model
 				e.Property(t => t.DateCreatedUtc).HasColumnType("datetime");
 				e.Property(t => t.DateLastModifiedUtc).HasColumnType("datetime");
 				e.HasOne(t => t.Country).WithMany(c => c.Teams).HasForeignKey(t => t.CountryId).OnDelete(DeleteBehavior.ClientNoAction);
+			});
+
+			modelBuilder.Entity<Player>(e =>
+			{
+				e.HasKey(p => p.PlayerId);
+				e.Property(p => p.FirstName).HasMaxLength(64);
+				e.Property(p => p.LastName).HasMaxLength(64);
+				e.Property(p => p.FullName).HasMaxLength(128);
+				e.Property(p => p.BirthCity).HasMaxLength(128).IsRequired(false);
+				e.Property(t => t.DateCreatedUtc).HasColumnType("datetime");
+				e.Property(t => t.DateLastModifiedUtc).HasColumnType("datetime");
+				e.HasOne(p => p.Nationality).WithMany(c => c.NationalPlayers).HasForeignKey(p => p.NationalityId);
+				e.HasOne(p => p.BirthCountry).WithMany(c => c.BornPlayers).HasForeignKey(p => p.BirthCountryId);
 			});
 
 			modelBuilder.Entity<Fixture>(e =>

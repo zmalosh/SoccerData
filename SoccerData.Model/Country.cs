@@ -16,5 +16,7 @@ namespace SoccerData.Model
 
 		public ICollection<Competition> Competitions { get; set; }
 		public ICollection<Team> Teams { get; set; }
+		public ICollection<Player> NationalPlayers { get; set; }
+		public ICollection<Player> BornPlayers { get; set; }
 	}
 }

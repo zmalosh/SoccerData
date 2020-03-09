@@ -20,9 +20,9 @@ namespace SoccerData.Program.Tasks
 
 				context = new SoccerDataContext(config);
 
-				//context.Database.EnsureDeleted();
-				//context.Database.EnsureCreated();
-				//context.SaveChanges();
+				context.Database.EnsureDeleted();
+				context.Database.EnsureCreated();
+				context.SaveChanges();
 
 				var countriesProcessor = new CountriesProcessor();
 				Console.WriteLine("START COUNTRIES");
