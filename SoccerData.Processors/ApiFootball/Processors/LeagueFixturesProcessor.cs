@@ -112,15 +112,15 @@ namespace SoccerData.Processors.ApiFootball.Processors
 						}
 					}
 
-					if (feedFixture.Score.Fulltime != null)
+					if (feedFixture.GoalsHomeTeam.HasValue && feedFixture.GoalsAwayTeam.HasValue)
 					{
 						if (!dbFixture.HomeFullTimeScore.HasValue
 							|| !dbFixture.AwayFullTimeScore.HasValue
-							|| feedFixture.Score.Fulltime != $"{dbFixture.HomeFullTimeScore}-{dbFixture.AwayFullTimeScore}")
+							|| dbFixture.HomeScore != feedFixture.GoalsHomeTeam
+							|| dbFixture.AwayScore != feedFixture.GoalsAwayTeam)
 						{
-							var scores = feedFixture.Score.Fulltime.Split('-').Select(x => int.Parse(x)).ToList();
-							dbFixture.HomeFullTimeScore = scores[0];
-							dbFixture.AwayFullTimeScore = scores[1];
+							dbFixture.HomeFullTimeScore = feedFixture.GoalsHomeTeam;
+							dbFixture.AwayFullTimeScore = feedFixture.GoalsAwayTeam;
 						}
 					}
 
