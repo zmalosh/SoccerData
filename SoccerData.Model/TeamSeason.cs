@@ -19,7 +19,9 @@ namespace SoccerData.Model
 		public virtual Team Team { get; set; }
 		public virtual CompetitionSeason CompetitionSeason { get; set; }
 		public virtual VenueSeason VenueSeason { get; set; }
-		public virtual ICollection<Fixture> HomeFixtures { get; set; }
-		public virtual ICollection<Fixture> AwayFixtures { get; set; }
+		public virtual IList<Fixture> HomeFixtures { get; set; }
+		public virtual IList<Fixture> AwayFixtures { get; set; }
+		public virtual IList<TeamBoxscore> TeamBoxscores { get; set; }
+		public virtual IList<TeamBoxscore> OppTeamBoxscores { get; set; }
 	}
 }

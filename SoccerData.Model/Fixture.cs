@@ -38,5 +38,6 @@ namespace SoccerData.Model
 		public virtual TeamSeason HomeTeamSeason { get; set; }
 		public virtual TeamSeason AwayTeamSeason { get; set; }
 		public virtual VenueSeason VenueSeason { get; set; }
+		public virtual IList<TeamBoxscore> TeamBoxscores { get; set; }
 	}
 }
