@@ -20,9 +20,9 @@ namespace SoccerData.Program.Tasks
 
 				context = new SoccerDataContext(config);
 
-				context.Database.EnsureDeleted();
-				context.Database.EnsureCreated();
-				context.SaveChanges();
+				//context.Database.EnsureDeleted();
+				//context.Database.EnsureCreated();
+				//context.SaveChanges();
 
 				var countriesProcessor = new CountriesProcessor();
 				Console.WriteLine("START COUNTRIES");
@@ -59,17 +59,18 @@ namespace SoccerData.Program.Tasks
 				//	200, 199, 294,								// USA - MLS
 				//};
 
-				var competitionSeasonIds = context.CompetitionSeasons
-													.Where(x => desiredLeagueIds == null || desiredLeagueIds.Contains(x.ApiFootballId))
-													.Select(x => x.CompetitionSeasonId)
-													.Distinct()
-													.OrderBy(x => x)
+				var competitionSeasons = context.CompetitionSeasons
+													//.Where(x => desiredLeagueIds == null || desiredLeagueIds.Contains(x.ApiFootballId))
+													.Where(x => x.StartDate.Date >= new DateTime(2019, 08, 01))
+													.Where(x => x.CompetitionSeasonId != 991) // SOME PROBLEM WITH MISSING TEAM.... CIRCLE BACK LATER
+													.OrderBy(x => x.CompetitionSeasonId)
 													.ToList();
 
-				for (int i = 0; i < competitionSeasonIds.Count; i++)
+				for (int i = 0; i < competitionSeasons.Count; i++)
 				{
-					Console.WriteLine($"START LEAGUE {i + 1} OF {competitionSeasonIds.Count}");
-					int competitionSeasonId = competitionSeasonIds[i];
+					Console.WriteLine($"START LEAGUE {i + 1} OF {competitionSeasons.Count}");
+					var competitionSeason = competitionSeasons[i];
+					int competitionSeasonId = competitionSeason.CompetitionSeasonId;
 
 					if (i % 10 == 9)
 					{
@@ -86,6 +87,35 @@ namespace SoccerData.Program.Tasks
 
 					var leagueFixturesProcessor = new LeagueFixturesProcessor(competitionSeasonId);
 					leagueFixturesProcessor.Run(context);
+
+					var competitionSeasonFixtures = context.Fixtures.Where(x => x.CompetitionSeasonId == competitionSeasonId).ToList();
+					for (int j = 0; j < competitionSeasonFixtures.Count; j++)
+					{
+						Console.WriteLine($"LEAGUE {i + 1} OF {competitionSeasons.Count} - FIXTURE {j + 1} OF {competitionSeasonFixtures.Count}");
+
+						var dbFixture = competitionSeasonFixtures[j];
+
+						if (competitionSeason.HasTeamStats)
+						{
+							if (string.Equals("Match Finished", dbFixture.Status, StringComparison.CurrentCultureIgnoreCase))
+							{
+								var teamBoxscoreProcessor = new FixtureTeamStatsProcessor(dbFixture.ApiFootballId);
+								teamBoxscoreProcessor.Run(context);
+							}
+
+							if (j % 30 == 29)
+							{
+								Console.WriteLine("NEW CONTEXT");
+								context.Dispose();
+								context = new SoccerDataContext(config);
+							}
+						}
+						else
+						{
+							dbFixture.HasTeamBoxscores = false;
+						}
+					}
+					context.SaveChanges();
 				}
 			}
 			finally

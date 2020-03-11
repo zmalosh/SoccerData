@@ -24,7 +24,7 @@ namespace SoccerData.Processors.ApiFootball.Processors
 												.Include(x => x.CompetitionSeasonRounds)
 												.Include(x => x.Fixtures)
 												.SingleOrDefault(x => x.CompetitionSeasonId == this.CompetitionSeasonId);
-			if (dbCompetitionSeason == null || !dbCompetitionSeason.HasFixtures)
+			if (dbCompetitionSeason == null)
 			{
 				return;
 			}

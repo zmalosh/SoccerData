@@ -53,7 +53,7 @@ namespace SoccerData.Processors.ApiFootball.Processors
 						ApiFootballId = league.LeagueId,
 						CompetitionId = dbCompetition.CompetitionId,
 						EndDate = league.SeasonEnd,
-						HasFixtures = league.Coverage.Fixtures.Events,
+						HasFixtureEvents = league.Coverage.Fixtures.Events,
 						HasLineups = league.Coverage.Fixtures.Lineups,
 						HasOdds = league.Coverage.Odds,
 						HasPlayers = league.Coverage.Players,

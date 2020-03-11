@@ -11,6 +11,7 @@ namespace SoccerData.Processors
 	{
 		private static readonly string ApiFootballApiKey = File.ReadAllText("ApiFootball.key");
 		private const string AzureContainerName = "apifootballcache";
+		private const string LocalCachePath = "C:\\FileCache\\ApiFootball";
 
 		private readonly ICacheUtility CacheUtility;
 		private readonly int? CacheTimeSeconds;
@@ -31,7 +32,8 @@ namespace SoccerData.Processors
 			}
 			else
 			{
-				this.CacheUtility = new AzureUtility(AzureContainerName);
+				//this.CacheUtility = new AzureUtility(AzureContainerName);
+				this.CacheUtility = new LocalCacheUtility(LocalCachePath);
 			}
 
 			this.WebClient = this.CreateWebClient(sourceType);

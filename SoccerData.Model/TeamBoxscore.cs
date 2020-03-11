@@ -9,7 +9,7 @@ namespace SoccerData.Model
 		public int FixtureId { get; set; }
 		public int TeamSeasonId { get; set; }
 		public int OppTeamSeasonId { get; set; }
-		public bool? IsHome { get; set; }
+		public bool IsHome { get; set; }
 		public int? ShotsOnGoal { get; set; }
 		public int? ShotsOffGoal { get; set; }
 		public int? ShotsBlocked { get; set; }

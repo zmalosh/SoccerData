@@ -1,6 +1,8 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 
 namespace SoccerData.Processors.ApiFootball.Feeds
@@ -12,7 +14,7 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 			return $"https://api-football-v1.p.rapidapi.com/v2/statistics/fixture/{apiFootballFixtureId}";
 		}
 
-		public static FixtureTeamStatsFeed FromJson(string json) => JsonConvert.DeserializeObject<FixtureTeamStatsFeed>(json, Converter.Settings);
+		public static FixtureTeamStatsFeed FromJson(string json) => JsonConvert.DeserializeObject<FixtureTeamStatsFeed>(json, FixtureTeamStatsFeed.Converter.Settings);
 
 		[JsonProperty("api")]
 		public ApiResultWrapper ResultWrapper { get; set; }
@@ -33,6 +35,66 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 
 			[JsonProperty("away")]
 			public string Away { get; set; }
+		}
+
+		public struct StatisticJsonNode
+		{
+			public List<object> AnythingArray;
+			public Dictionary<string, Statistic> StatsDict;
+
+			public static implicit operator StatisticJsonNode(List<object> AnythingArray) => new StatisticJsonNode { AnythingArray = AnythingArray };
+			public static implicit operator StatisticJsonNode(Dictionary<string, Statistic> StatsDict) => new StatisticJsonNode { StatsDict = StatsDict };
+		}
+
+		internal static class Converter
+		{
+			public static readonly JsonSerializerSettings Settings = new JsonSerializerSettings
+			{
+				MetadataPropertyHandling = MetadataPropertyHandling.Ignore,
+				DateParseHandling = DateParseHandling.None,
+				Converters =
+			{
+				StatisticsConverter.Singleton,
+				new IsoDateTimeConverter { DateTimeStyles = DateTimeStyles.AssumeUniversal }
+			},
+			};
+		}
+
+		internal class StatisticsConverter : JsonConverter
+		{
+			public override bool CanConvert(Type t) => t == typeof(StatisticJsonNode) || t == typeof(StatisticJsonNode?);
+
+			public override object ReadJson(JsonReader reader, Type t, object existingValue, JsonSerializer serializer)
+			{
+				switch (reader.TokenType)
+				{
+					case JsonToken.StartObject:
+						var objectValue = serializer.Deserialize<Dictionary<string, Statistic>>(reader);
+						return new StatisticJsonNode { StatsDict = objectValue };
+					case JsonToken.StartArray:
+						var arrayValue = serializer.Deserialize<List<object>>(reader);
+						return new StatisticJsonNode { AnythingArray = arrayValue };
+				}
+				throw new Exception("Cannot unmarshal type StatisticJsonNode");
+			}
+
+			public override void WriteJson(JsonWriter writer, object untypedValue, JsonSerializer serializer)
+			{
+				var value = (StatisticJsonNode)untypedValue;
+				if (value.AnythingArray != null)
+				{
+					serializer.Serialize(writer, value.AnythingArray);
+					return;
+				}
+				if (value.StatsDict != null)
+				{
+					serializer.Serialize(writer, value.StatsDict);
+					return;
+				}
+				throw new Exception("Cannot marshal type StatisticJsonNode");
+			}
+
+			public static readonly StatisticsConverter Singleton = new StatisticsConverter();
 		}
 
 		public static class StatKeys
@@ -58,6 +120,6 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 
 	public static partial class Serialize
 	{
-		public static string ToJson(this FixtureTeamStatsFeed self) => JsonConvert.SerializeObject(self, Converter.Settings);
+		public static string ToJson(this FixtureTeamStatsFeed self) => JsonConvert.SerializeObject(self, FixtureTeamStatsFeed.Converter.Settings);
 	}
 }

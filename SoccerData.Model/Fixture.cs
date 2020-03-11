@@ -30,6 +30,7 @@ namespace SoccerData.Model
 		public DateTime? FirstHalfStartUtc { get; set; }
 		public DateTime? SecondHalfStartUtc { get; set; }
 		public int ApiFootballId { get; set; }
+		public bool? HasTeamBoxscores { get; set; }
 		public DateTime DateLastModifiedUtc { get; set; }
 		public DateTime DateCreatedUtc { get; set; }
 
