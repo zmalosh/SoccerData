@@ -12,7 +12,7 @@ namespace SoccerData.Model
 		public DateTime StartDate { get; set; }
 		public DateTime EndDate { get; set; }
 		public bool IsCurrent { get; set; }
-		public bool HasFixtures { get; set; }
+		public bool HasFixtureEvents { get; set; }
 		public bool HasLineups { get; set; }
 		public bool HasPlayerStats { get; set; }
 		public bool HasTeamStats { get; set; }
