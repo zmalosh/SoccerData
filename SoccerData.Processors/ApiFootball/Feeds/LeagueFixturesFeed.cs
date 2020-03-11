@@ -17,7 +17,7 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 		[JsonProperty("api")]
 		public ApiResult Result { get; set; }
 
-		public partial class ApiResult
+		public class ApiResult
 		{
 			[JsonProperty("results")]
 			public int Count { get; set; }

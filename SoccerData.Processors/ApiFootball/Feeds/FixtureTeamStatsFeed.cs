@@ -20,7 +20,7 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 		public class ApiResultWrapper
 		{
 			[JsonProperty("results")]
-			public long Results { get; set; }
+			public int Count { get; set; }
 
 			[JsonProperty("statistics")]
 			public Dictionary<string, Statistic> Statistics { get; set; }
@@ -53,7 +53,7 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 			public const string TotalPasses = "Total passes";
 			public const string AccuratePasses = "Passes accurate";
 			public const string PassCompPct = "Passes %";
-		}		
+		}
 	}
 
 	public static partial class Serialize
