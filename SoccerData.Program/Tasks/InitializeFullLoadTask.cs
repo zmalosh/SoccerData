@@ -61,8 +61,9 @@ namespace SoccerData.Program.Tasks
 
 				var competitionSeasons = context.CompetitionSeasons
 													//.Where(x => desiredLeagueIds == null || desiredLeagueIds.Contains(x.ApiFootballId))
-													.Where(x => x.StartDate.Date >= new DateTime(2019, 08, 01))
-													.Where(x => x.CompetitionSeasonId != 991) // SOME PROBLEM WITH MISSING TEAM.... CIRCLE BACK LATER
+													//.Where(x => x.StartDate.Date >= new DateTime(2019, 08, 01))
+													.Where(x => (x.IsCurrent && x.EndDate.Date >= DateTime.Now.Date) || (new List<string> { "MX", "RU", "CL", "DZ", "AR", "TR", "UA", "AU", "IN", "BY", "BR", "CR" }).Contains(x.Competition.Country.CountryAbbr)) // CURRENT || (PAST FROM COUNTRIES NOT CURRENTLY CANCELLED DUE TO COVID-19)
+													.Where(x => x.CompetitionSeasonId != 991 && x.CompetitionSeasonId != 1353 && x.CompetitionSeasonId != 1357) // SOME PROBLEM WITH MISSING TEAM.... CIRCLE BACK LATER
 													.OrderBy(x => x.CompetitionSeasonId)
 													.ToList();
 
@@ -95,24 +96,16 @@ namespace SoccerData.Program.Tasks
 
 						var dbFixture = competitionSeasonFixtures[j];
 
-						if (competitionSeason.HasTeamStats)
+						if (string.Equals("Match Finished", dbFixture.Status, StringComparison.CurrentCultureIgnoreCase))
 						{
-							if (string.Equals("Match Finished", dbFixture.Status, StringComparison.CurrentCultureIgnoreCase))
-							{
-								var teamBoxscoreProcessor = new FixtureTeamStatsProcessor(dbFixture.ApiFootballId);
-								teamBoxscoreProcessor.Run(context);
-							}
-
-							if (j % 30 == 29)
-							{
-								Console.WriteLine("NEW CONTEXT");
-								context.Dispose();
-								context = new SoccerDataContext(config);
-							}
+							// TODO: PROCESS FIXTURE DATA (INCLUDE SETTING HasTeamBoxscores VALUE ON FIXTURE)
 						}
-						else
+
+						if (j % 30 == 29)
 						{
-							dbFixture.HasTeamBoxscores = false;
+							Console.WriteLine("NEW CONTEXT");
+							context.Dispose();
+							context = new SoccerDataContext(config);
 						}
 					}
 					context.SaveChanges();
