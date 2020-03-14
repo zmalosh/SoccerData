@@ -7,7 +7,7 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 {
 	public class TeamFeed
 	{
-		public static string GetFeedUrlByFixtureId(int apiFootballTeamId)
+		public static string GetFeedUrlByTeamId(int apiFootballTeamId)
 		{
 			return $"https://api-football-v1.p.rapidapi.com/v2/teams/team/{apiFootballTeamId}";
 		}
