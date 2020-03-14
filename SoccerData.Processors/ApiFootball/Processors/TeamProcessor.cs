@@ -33,7 +33,7 @@ namespace SoccerData.Processors.ApiFootball.Processors
 				dbTeam = new Team
 				{
 					ApiFootballId = this.ApiFootballTeamId,
-					CountryId = dbContext.Countries.Single(x => x.ApiFootballCountryName == feedTeam.Name).CountryId,
+					CountryId = dbContext.Countries.Single(x => x.ApiFootballCountryName == (feedTeam.Country ?? "World")).CountryId,
 					LogoUrl = feedTeam.Logo,
 					TeamName = feedTeam.Name,
 					YearFounded = feedTeam.Founded
