@@ -10,6 +10,7 @@ namespace SoccerData.Model
 		public int TeamSeasonId { get; set; }
 		public int OppTeamSeasonId { get; set; }
 		public bool IsHome { get; set; }
+		public int CoachId { get; set; }
 		public int? ShotsOnGoal { get; set; }
 		public int? ShotsOffGoal { get; set; }
 		public int? ShotsBlocked { get; set; }
@@ -32,5 +33,6 @@ namespace SoccerData.Model
 		public virtual Fixture Fixture { get; set; }
 		public virtual TeamSeason TeamSeason { get; set; }
 		public virtual TeamSeason OppTeamSeason { get; set; }
+		public virtual Coach Coach { get; set; }
 	}
 }

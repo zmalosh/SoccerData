@@ -37,6 +37,7 @@ namespace SoccerData.Model
 		public DbSet<TeamSeason> TeamSeasons { get; set; }
 		public DbSet<Fixture> Fixtures { get; set; }
 		public DbSet<Player> Players { get; set; }
+		public DbSet<Coach> Coaches { get; set; }
 		public DbSet<TeamBoxscore> TeamBoxscores { get; set; }
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -143,12 +144,21 @@ namespace SoccerData.Model
 				e.HasOne(f => f.VenueSeason).WithMany(vs => vs.Fixtures).HasForeignKey(f => f.VenueSeasonId).OnDelete(DeleteBehavior.ClientSetNull);
 			});
 
+			modelBuilder.Entity<Coach>(e =>
+			{
+				e.HasKey(c => c.CoachId);
+				e.Property(c => c.CoachName).IsRequired(false).HasMaxLength(128);
+				e.Property(c => c.DateCreatedUtc).HasColumnType("datetime");
+				e.Property(c => c.DateLastModifiedUtc).HasColumnType("datetime");
+			});
+
 			modelBuilder.Entity<TeamBoxscore>(e =>
 			{
 				e.HasKey(tb => new { tb.FixtureId, tb.TeamSeasonId });
 				e.Property(tb => tb.DateCreatedUtc).HasColumnType("datetime");
 				e.Property(tb => tb.DateLastModifiedUtc).HasColumnType("datetime");
 				e.HasOne(tb => tb.Fixture).WithMany(f => f.TeamBoxscores).HasForeignKey(tb => tb.FixtureId).OnDelete(DeleteBehavior.ClientSetNull);
+				e.HasOne(tb => tb.Coach).WithMany(c => c.TeamBoxscores).HasForeignKey(tb => tb.CoachId).OnDelete(DeleteBehavior.ClientSetNull);
 			});
 
 			modelBuilder.Entity<TeamSeason>(e =>
