@@ -43,10 +43,14 @@ namespace SoccerData.Processors.ApiFootball.Processors
 
 			Feeds.FixtureFeed.ApiLineup homeLineup = null;
 			Feeds.FixtureFeed.ApiLineup awayLineup = null;
+			string homeFormation = null;
+			string awayFormation = null;
 			if (feedFixture.Lineups == null || feedFixture.Lineups.Count != 2)
 			{
 				homeLineup = feedFixture.Lineups[feedFixture.HomeTeam.TeamName];
 				awayLineup = feedFixture.Lineups[feedFixture.AwayTeam.TeamName];
+				homeFormation = homeLineup.Formation;
+				awayFormation = awayLineup.Formation;
 			}
 
 			#region ENSURE COACHES EXIST
@@ -131,12 +135,12 @@ namespace SoccerData.Processors.ApiFootball.Processors
 					hasUpdate = true;
 				}
 
-				if (PopulateTeamBoxscore(homeCoachId, apiTeamStatsDict, x => x.Home, ref dbHomeBoxscore))
+				if (PopulateTeamBoxscore(homeCoachId, homeFormation, apiTeamStatsDict, x => x.Home, ref dbHomeBoxscore))
 				{
 					hasUpdate = true;
 					dbFixture.HasTeamBoxscores = true;
 				}
-				if (PopulateTeamBoxscore(awayCoachId, apiTeamStatsDict, x => x.Away, ref dbAwayBoxscore))
+				if (PopulateTeamBoxscore(awayCoachId, awayFormation, apiTeamStatsDict, x => x.Away, ref dbAwayBoxscore))
 				{
 					hasUpdate = true;
 					dbFixture.HasTeamBoxscores = true;
@@ -167,7 +171,7 @@ namespace SoccerData.Processors.ApiFootball.Processors
 		/// <param name="statGetFunc">Function to return the desired stat from a Statistic object. Used to choose home or away value.</param>
 		/// <param name="dbTeamBoxscore">Object to populate</param>
 		/// <returns>true if an update has been made; else false</returns>
-		private bool PopulateTeamBoxscore(int? coachId,
+		private bool PopulateTeamBoxscore(int? coachId, string teamFormation,
 			Dictionary<string, Feeds.FixtureFeed.ApiTeamStatistic> apiStatsDict,
 			Func<Feeds.FixtureFeed.ApiTeamStatistic, string> statGetFunc,
 			ref TeamBoxscore dbTeamBoxscore)
@@ -177,6 +181,13 @@ namespace SoccerData.Processors.ApiFootball.Processors
 			if (coachId.HasValue && (!dbTeamBoxscore.CoachId.HasValue || dbTeamBoxscore.CoachId != coachId.Value))
 			{
 				dbTeamBoxscore.CoachId = coachId;
+				hasUpdate = true;
+			}
+
+			if (!string.IsNullOrEmpty(teamFormation) && dbTeamBoxscore.Formation != teamFormation)
+			{
+				dbTeamBoxscore.Formation = teamFormation;
+				hasUpdate = true;
 			}
 
 			int? statVal = GetStatValueByKey(Feeds.FixtureFeed.TeamStatKeys.ShotsOnGoal, apiStatsDict, statGetFunc);

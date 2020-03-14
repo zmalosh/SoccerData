@@ -11,6 +11,7 @@ namespace SoccerData.Model
 		public int OppTeamSeasonId { get; set; }
 		public bool IsHome { get; set; }
 		public int? CoachId { get; set; }
+		public string Formation { get; set; }
 		public int? ShotsOnGoal { get; set; }
 		public int? ShotsOffGoal { get; set; }
 		public int? ShotsBlocked { get; set; }
