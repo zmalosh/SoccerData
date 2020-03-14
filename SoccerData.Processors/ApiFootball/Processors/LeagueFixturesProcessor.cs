@@ -106,9 +106,12 @@ namespace SoccerData.Processors.ApiFootball.Processors
 							|| !dbFixture.AwayHalfTimeScore.HasValue
 							|| feedFixture.Score.Halftime != $"{dbFixture.HomeHalfTimeScore}-{dbFixture.AwayHalfTimeScore}")
 						{
-							var scores = feedFixture.Score.Halftime.Split('-').Select(x => int.Parse(x)).ToList();
-							dbFixture.HomeHalfTimeScore = scores[0];
-							dbFixture.AwayHalfTimeScore = scores[1];
+							var arrScores = feedFixture.Score.Halftime.Split('-').ToList();
+							if (arrScores != null && arrScores.Count == 2 && int.TryParse(arrScores[0], out int score1) && int.TryParse(arrScores[1], out int score2))
+							{
+								dbFixture.HomeHalfTimeScore = score1;
+								dbFixture.AwayHalfTimeScore = score2;
+							}
 						}
 					}
 
@@ -130,9 +133,12 @@ namespace SoccerData.Processors.ApiFootball.Processors
 							|| !dbFixture.AwayExtraTimeScore.HasValue
 							|| feedFixture.Score.ExtraTime != $"{dbFixture.HomeExtraTimeScore}-{dbFixture.AwayExtraTimeScore}")
 						{
-							var scores = feedFixture.Score.ExtraTime.Split('-').Select(x => int.Parse(x)).ToList();
-							dbFixture.HomeExtraTimeScore = scores[0];
-							dbFixture.AwayExtraTimeScore = scores[1];
+							var arrScores = feedFixture.Score.ExtraTime.Split('-').ToList();
+							if (arrScores != null && arrScores.Count == 2 && int.TryParse(arrScores[0], out int score1) && int.TryParse(arrScores[1], out int score2))
+							{
+								dbFixture.HomeExtraTimeScore = score1;
+								dbFixture.AwayExtraTimeScore = score2;
+							}
 						}
 					}
 
@@ -142,9 +148,12 @@ namespace SoccerData.Processors.ApiFootball.Processors
 							|| !dbFixture.AwayPenaltiesScore.HasValue
 							|| feedFixture.Score.Penalty != $"{dbFixture.HomePenaltiesScore}-{dbFixture.AwayPenaltiesScore}")
 						{
-							var scores = feedFixture.Score.Penalty.Split('-').Select(x => int.Parse(x)).ToList();
-							dbFixture.HomePenaltiesScore = scores[0];
-							dbFixture.AwayPenaltiesScore = scores[1];
+							var arrScores = feedFixture.Score.Penalty.Split('-').ToList();
+							if (arrScores != null && arrScores.Count == 2 && int.TryParse(arrScores[0], out int score1) && int.TryParse(arrScores[1], out int score2))
+							{
+								dbFixture.HomePenaltiesScore = score1;
+								dbFixture.AwayPenaltiesScore = score2;
+							}
 						}
 					}
 				}
