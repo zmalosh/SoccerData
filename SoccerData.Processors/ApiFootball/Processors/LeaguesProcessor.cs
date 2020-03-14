@@ -26,7 +26,7 @@ namespace SoccerData.Processors.ApiFootball.Processors
 			var existingCompetitions = dbContext.Competitions.ToDictionary(x => GetCompetitionKey(x), y => y);
 			var existingCompetitionSeasons = dbContext.CompetitionSeasons.ToDictionary(x => x.ApiFootballId);
 
-			var countryDict = dbContext.Countries.ToDictionary(x => x.CountryAbbr ?? "(null)", y => y.CountryId);
+			var countryDict = dbContext.Countries.ToDictionary(x => x.CountryAbbr ?? "(NULL)", y => y.CountryId);
 
 			foreach (var league in orderedLeagues)
 			{
@@ -37,7 +37,7 @@ namespace SoccerData.Processors.ApiFootball.Processors
 					{
 						CompetitionName = league.Name.Trim(),
 						CompetitionType = league.Type.Trim(),
-						CountryId = countryDict[league.CountryCode ?? "(null)"],
+						CountryId = countryDict[league.CountryCode ?? "(NULL)"],
 						LogoUrl = league.Logo?.ToString()
 					};
 
@@ -80,17 +80,17 @@ namespace SoccerData.Processors.ApiFootball.Processors
 
 		private string GetCompetitionKey(Competition dbCompetition)
 		{
-			return $"{dbCompetition.Country.CountryAbbr ?? "(null)"}_{dbCompetition.CompetitionName}";
+			return $"{dbCompetition.Country.CountryAbbr ?? "(null)"}_{dbCompetition.CompetitionName}".ToUpperInvariant(); ;
 		}
 
 		private string GetCompetitionKey(Feeds.LeaguesFeed.League league)
 		{
-			return $"{league.CountryCode ?? "(null)"}_{league.Name}";
+			return $"{league.CountryCode ?? "(null)"}_{league.Name}".ToUpperInvariant();
 		}
 
 		private string GetCompetitionSeasonKey(int competitionId, int season)
 		{
-			return $"{competitionId}_{season}";
+			return $"{competitionId}_{season}".ToUpperInvariant();
 		}
 	}
 }
