@@ -7,7 +7,7 @@ using System.Text;
 
 namespace SoccerData.Processors
 {
-	public class JsonUtility
+	public class JsonUtility : IDisposable
 	{
 		private static readonly string ApiFootballApiKey = File.ReadAllText("ApiFootball.key");
 		private const string AzureContainerName = "apifootballcache";
@@ -78,6 +78,11 @@ namespace SoccerData.Processors
 				client.Headers.Add("x-rapidapi-key", ApiFootballApiKey);
 			}
 			return client;
+		}
+
+		public void Dispose()
+		{
+			this.WebClient.Dispose();
 		}
 	}
 }
