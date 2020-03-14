@@ -43,6 +43,40 @@ namespace SoccerData.Processors.ApiFootball.Processors
 
 			var feedFixtures = feed.Result.Fixtures.OrderBy(x => x.EventTimestamp).ThenBy(x => x.HomeTeam?.TeamName).ToList();
 
+			#region ADD MISSING TEAMS INDIVIDUALLY (THEY ARE NOT IN THE API TEAMS LIST)
+			var apiTeamIds = feedFixtures.SelectMany(x => new[] { x.AwayTeam.TeamId, x.HomeTeam.TeamId }).ToList();
+			var missingApiTeamIds = apiTeamIds.Where(x => !teamDict.ContainsKey(x)).ToList();
+			if (missingApiTeamIds != null && missingApiTeamIds.Count > 0)
+			{
+				foreach (var missingApiTeamId in missingApiTeamIds)
+				{
+					var dbTeam = dbContext.Teams.SingleOrDefault(x => x.ApiFootballId == missingApiTeamId);
+					if (dbTeam == null)
+					{
+						var teamProcessor = new TeamProcessor(missingApiTeamId);
+						teamProcessor.Run(dbContext);
+						dbTeam = dbContext.Teams.SingleOrDefault(x => x.ApiFootballId == missingApiTeamId);
+					}
+
+					var dbTeamSeason = dbContext.TeamSeasons.SingleOrDefault(x => x.TeamId == dbTeam.TeamId && x.CompetitionSeasonId == this.CompetitionSeasonId);
+					if (dbTeamSeason == null)
+					{
+						// CANNOT SET VENUE HERE FROM dbTeam OR API TEAM CALL BECAUSE OF POSSIBLE SEASON MISMATCH
+						dbTeamSeason = new TeamSeason
+						{
+							CompetitionSeasonId = this.CompetitionSeasonId,
+							TeamId = dbTeam.TeamId,
+							LogoUrl = dbTeam.LogoUrl,
+							Season = dbCompetitionSeason.Season,
+							TeamName = dbTeam.TeamName
+						};
+						dbContext.TeamSeasons.Add(dbTeamSeason);
+						dbContext.SaveChanges();
+					}
+				}
+			}
+			#endregion ADD MISSING TEAMS INDIVIDUALLY 
+
 			foreach (var feedFixture in feedFixtures)
 			{
 				if (!fixtureDict.TryGetValue(feedFixture.FixtureId, out Fixture dbFixture))
