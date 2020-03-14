@@ -72,6 +72,7 @@ namespace SoccerData.Processors.ApiFootball.Processors
 						};
 						dbContext.TeamSeasons.Add(dbTeamSeason);
 						dbContext.SaveChanges();
+						teamDict.Add(dbTeam.ApiFootballId, dbTeamSeason.TeamSeasonId);
 					}
 				}
 			}
