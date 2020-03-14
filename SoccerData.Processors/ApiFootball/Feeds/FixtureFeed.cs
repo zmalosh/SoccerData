@@ -89,7 +89,7 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 			public Dictionary<string, ApiLineup> Lineups { get; set; }
 
 			[JsonProperty("statistics")]
-			public Dictionary<string, ApiTeamStatistic> Statistics { get; set; }
+			public Dictionary<string, ApiTeamStatistic> TeamStatistics { get; set; }
 
 			[JsonProperty("players")]
 			public List<Player> Players { get; set; }
@@ -393,6 +393,26 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 
 			[JsonProperty("away")]
 			public string Away { get; set; }
+		}
+
+		public static class TeamStatKeys
+		{
+			public const string ShotsOnGoal = "Shots on Goal";
+			public const string ShotsOffGoal = "Shots off Goal";
+			public const string TotalShots = "Total Shots";
+			public const string BlockedShots = "Blocked Shots";
+			public const string ShotsInsideBox = "Shots insidebox";
+			public const string ShotsOutsideBox = "Shots outsidebox";
+			public const string FoulsCommitted = "Fouls";
+			public const string CornerKicks = "Corner Kicks";
+			public const string Offsides = "Offsides";
+			public const string BallPossession = "Ball Possession";
+			public const string YellowCards = "Yellow Cards";
+			public const string RedCards = "Red Cards";
+			public const string GoalkeeperSaves = "Goalkeeper Saves";
+			public const string TotalPasses = "Total passes";
+			public const string AccuratePasses = "Passes accurate";
+			public const string PassCompPct = "Passes %";
 		}
 
 		public static FixtureFeed FromJson(string json) => JsonConvert.DeserializeObject<FixtureFeed>(json, Converter.Settings);
