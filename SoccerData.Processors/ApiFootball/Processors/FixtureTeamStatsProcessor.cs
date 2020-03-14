@@ -243,7 +243,12 @@ namespace SoccerData.Processors.ApiFootball.Processors
 			}
 
 			strValue = strValue.Replace("%", string.Empty);
-			return int.Parse(strValue);
+
+			if (int.TryParse(strValue, out int result))
+			{
+				return result;
+			}
+			return null;
 		}
 	}
 }
