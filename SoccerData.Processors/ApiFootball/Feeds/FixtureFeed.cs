@@ -116,13 +116,13 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 			public int? ElapsedPlus { get; set; }
 
 			[JsonProperty("team_id")]
-			public int TeamId { get; set; }
+			public int? TeamId { get; set; }
 
 			[JsonProperty("teamName")]
 			public string TeamName { get; set; }
 
 			[JsonProperty("player_id")]
-			public int PlayerId { get; set; } // PLAYER OUT ON SUBS
+			public int? PlayerId { get; set; } // PLAYER OUT ON SUBS
 
 			[JsonProperty("player")]
 			public string Player { get; set; } // PLAYER OUT ON SUBS
@@ -161,7 +161,7 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 		public class ApiLineup
 		{
 			[JsonProperty("coach_id")]
-			public int CoachId { get; set; }
+			public int? CoachId { get; set; }
 
 			[JsonProperty("coach")]
 			public string Coach { get; set; }
@@ -182,13 +182,13 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 			public int TeamId { get; set; }
 
 			[JsonProperty("player_id")]
-			public int PlayerId { get; set; }
+			public int? PlayerId { get; set; }
 
 			[JsonProperty("player")]
 			public string Player { get; set; }
 
 			[JsonProperty("number")]
-			public int Number { get; set; }
+			public int? Number { get; set; }
 
 			[JsonProperty("pos")]
 			public string Pos { get; set; }
@@ -203,7 +203,7 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 			public int UpdateAt { get; set; }
 
 			[JsonProperty("player_id")]
-			public int PlayerId { get; set; }
+			public int? PlayerId { get; set; }
 
 			[JsonProperty("player_name")]
 			public string PlayerName { get; set; }
