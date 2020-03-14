@@ -155,6 +155,7 @@ namespace SoccerData.Model
 			modelBuilder.Entity<TeamBoxscore>(e =>
 			{
 				e.HasKey(tb => new { tb.FixtureId, tb.TeamSeasonId });
+				e.Property(tb => tb.CoachId).IsRequired(false);
 				e.Property(tb => tb.DateCreatedUtc).HasColumnType("datetime");
 				e.Property(tb => tb.DateLastModifiedUtc).HasColumnType("datetime");
 				e.HasOne(tb => tb.Fixture).WithMany(f => f.TeamBoxscores).HasForeignKey(tb => tb.FixtureId).OnDelete(DeleteBehavior.ClientSetNull);
