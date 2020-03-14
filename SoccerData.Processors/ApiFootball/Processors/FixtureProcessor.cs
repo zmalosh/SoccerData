@@ -40,6 +40,54 @@ namespace SoccerData.Processors.ApiFootball.Processors
 			int dbAwayTeamSeasonId = dbFixture.AwayTeamSeasonId.Value;
 
 			bool hasUpdate = false;
+
+			Feeds.FixtureFeed.ApiLineup homeLineup = null;
+			Feeds.FixtureFeed.ApiLineup awayLineup = null;
+			if (feedFixture.Lineups == null || feedFixture.Lineups.Count != 2)
+			{
+				homeLineup = feedFixture.Lineups[feedFixture.HomeTeam.TeamName];
+				awayLineup = feedFixture.Lineups[feedFixture.AwayTeam.TeamName];
+			}
+
+			#region ENSURE COACHES EXIST
+			int? homeCoachId = null;
+			int? awayCoachId = null;
+			if (homeLineup != null || awayLineup != null)
+			{
+				var apiCoachIds = new[] { homeLineup.CoachId, awayLineup.CoachId };
+				var dbCoaches = dbContext.Coaches.Where(x => apiCoachIds.Contains(x.ApiFootballId)).ToDictionary(x => x.ApiFootballId, y => y);
+
+				if (homeLineup?.CoachId != null)
+				{
+					if (!dbCoaches.TryGetValue(homeLineup.CoachId.Value, out Coach dbHomeCoach))
+					{
+						dbHomeCoach = new Coach
+						{
+							ApiFootballId = homeLineup.CoachId.Value,
+							CoachName = homeLineup.Coach
+						};
+						dbContext.Coaches.Add(dbHomeCoach);
+						dbContext.SaveChanges();
+					}
+					homeCoachId = dbHomeCoach.CoachId;
+				}
+				if (awayLineup?.CoachId != null)
+				{
+					if (!dbCoaches.TryGetValue(awayLineup.CoachId.Value, out Coach dbAwayCoach))
+					{
+						dbAwayCoach = new Coach
+						{
+							ApiFootballId = awayLineup.CoachId.Value,
+							CoachName = awayLineup.Coach
+						};
+						dbContext.Coaches.Add(dbAwayCoach);
+						dbContext.SaveChanges();
+					}
+					awayCoachId = dbAwayCoach.CoachId;
+				}
+			}
+			#endregion ENSURE COACHES EXIST 
+
 			#region TEAM BOXSCORE
 
 			var apiTeamStatsDict = feedFixture.TeamStatistics;
@@ -83,12 +131,12 @@ namespace SoccerData.Processors.ApiFootball.Processors
 					hasUpdate = true;
 				}
 
-				if (PopulateTeamBoxscore(apiTeamStatsDict, x => x.Home, ref dbHomeBoxscore))
+				if (PopulateTeamBoxscore(homeCoachId, apiTeamStatsDict, x => x.Home, ref dbHomeBoxscore))
 				{
 					hasUpdate = true;
 					dbFixture.HasTeamBoxscores = true;
 				}
-				if (PopulateTeamBoxscore(apiTeamStatsDict, x => x.Away, ref dbAwayBoxscore))
+				if (PopulateTeamBoxscore(awayCoachId, apiTeamStatsDict, x => x.Away, ref dbAwayBoxscore))
 				{
 					hasUpdate = true;
 					dbFixture.HasTeamBoxscores = true;
@@ -119,11 +167,17 @@ namespace SoccerData.Processors.ApiFootball.Processors
 		/// <param name="statGetFunc">Function to return the desired stat from a Statistic object. Used to choose home or away value.</param>
 		/// <param name="dbTeamBoxscore">Object to populate</param>
 		/// <returns>true if an update has been made; else false</returns>
-		private bool PopulateTeamBoxscore(Dictionary<string, Feeds.FixtureFeed.ApiTeamStatistic> apiStatsDict,
+		private bool PopulateTeamBoxscore(int? coachId,
+			Dictionary<string, Feeds.FixtureFeed.ApiTeamStatistic> apiStatsDict,
 			Func<Feeds.FixtureFeed.ApiTeamStatistic, string> statGetFunc,
 			ref TeamBoxscore dbTeamBoxscore)
 		{
 			bool hasUpdate = false;
+
+			if (coachId.HasValue && (!dbTeamBoxscore.CoachId.HasValue || dbTeamBoxscore.CoachId != coachId.Value))
+			{
+				dbTeamBoxscore.CoachId = coachId;
+			}
 
 			int? statVal = GetStatValueByKey(Feeds.FixtureFeed.TeamStatKeys.ShotsOnGoal, apiStatsDict, statGetFunc);
 			if (statVal.HasValue && statVal.Value != dbTeamBoxscore.ShotsOnGoal)
