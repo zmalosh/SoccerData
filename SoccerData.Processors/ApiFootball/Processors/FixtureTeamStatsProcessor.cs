@@ -22,7 +22,7 @@ namespace SoccerData.Processors.ApiFootball.Processors
 			var dbFixture = dbContext.Fixtures.Single(x => x.ApiFootballId == this.ApiFootballFixtureId);
 			var isFixtureFinal = string.Equals("Match Finished", dbFixture.Status, StringComparison.CurrentCultureIgnoreCase);
 
-			if (!dbFixture.AwayTeamSeasonId.HasValue
+			if (!dbFixture.HomeTeamSeasonId.HasValue
 				|| !dbFixture.AwayTeamSeasonId.HasValue
 				|| !isFixtureFinal)
 			{
