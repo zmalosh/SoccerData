@@ -12,6 +12,7 @@ namespace SoccerData.Model
 		public DateTime DateLastModifiedUtc { get; set; }
 		public DateTime DateCreatedUtc { get; set; }
 
-		public virtual IList<TeamBoxscore> TeamBoxscores { get; set; }
+		public virtual IList<Fixture> HomeFixtures { get; set; }
+		public virtual IList<Fixture> AwayFixtures { get; set; }
 	}
 }

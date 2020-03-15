@@ -139,6 +139,8 @@ namespace SoccerData.Model
 				e.Property(f => f.DateLastModifiedUtc).HasColumnType("datetime");
 				e.Property(f => f.Status).HasMaxLength(32);
 				e.Property(f => f.StatusShort).HasMaxLength(8);
+				e.Property(f => f.HomeFormation).HasMaxLength(16);
+				e.Property(f => f.AwayFormation).HasMaxLength(16);
 				e.HasOne(f => f.CompetitionSeason).WithMany(cs => cs.Fixtures).HasForeignKey(f => f.CompetitionSeasonId).OnDelete(DeleteBehavior.ClientSetNull);
 				e.HasOne(f => f.CompetitionSeasonRound).WithMany(csr => csr.Fixtures).HasForeignKey(f => f.CompetitionSeasonRoundId).OnDelete(DeleteBehavior.ClientSetNull);
 				e.HasOne(f => f.VenueSeason).WithMany(vs => vs.Fixtures).HasForeignKey(f => f.VenueSeasonId).OnDelete(DeleteBehavior.ClientSetNull);
@@ -150,17 +152,16 @@ namespace SoccerData.Model
 				e.Property(c => c.CoachName).IsRequired(false).HasMaxLength(128);
 				e.Property(c => c.DateCreatedUtc).HasColumnType("datetime");
 				e.Property(c => c.DateLastModifiedUtc).HasColumnType("datetime");
+				e.HasMany(c => c.HomeFixtures).WithOne(f => f.HomeCoach).HasForeignKey(f => f.HomeCoachId).OnDelete(DeleteBehavior.ClientSetNull);
+				e.HasMany(c => c.AwayFixtures).WithOne(f => f.AwayCoach).HasForeignKey(f => f.AwayCoachId).OnDelete(DeleteBehavior.ClientSetNull);
 			});
 
 			modelBuilder.Entity<TeamBoxscore>(e =>
 			{
 				e.HasKey(tb => new { tb.FixtureId, tb.TeamSeasonId });
-				e.Property(tb => tb.CoachId).IsRequired(false);
-				e.Property(tb => tb.Formation).HasMaxLength(16).IsRequired(false);
 				e.Property(tb => tb.DateCreatedUtc).HasColumnType("datetime");
 				e.Property(tb => tb.DateLastModifiedUtc).HasColumnType("datetime");
 				e.HasOne(tb => tb.Fixture).WithMany(f => f.TeamBoxscores).HasForeignKey(tb => tb.FixtureId).OnDelete(DeleteBehavior.ClientSetNull);
-				e.HasOne(tb => tb.Coach).WithMany(c => c.TeamBoxscores).HasForeignKey(tb => tb.CoachId).OnDelete(DeleteBehavior.ClientSetNull);
 			});
 
 			modelBuilder.Entity<TeamSeason>(e =>

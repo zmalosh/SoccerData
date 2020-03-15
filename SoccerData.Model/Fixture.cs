@@ -16,6 +16,10 @@ namespace SoccerData.Model
 		public string Status { get; set; }
 		public string StatusShort { get; set; }
 		public int? TimeElapsed { get; set; }
+		public int? HomeCoachId { get; set; }
+		public int? AwayCoachId { get; set; }
+		public string HomeFormation { get; set; }
+		public string AwayFormation { get; set; }
 		public string Referee { get; set; }
 		public int? VenueSeasonId { get; set; }
 		public int? HomeHalfTimeScore { get; set; }
@@ -38,6 +42,8 @@ namespace SoccerData.Model
 		public virtual CompetitionSeasonRound CompetitionSeasonRound { get; set; }
 		public virtual TeamSeason HomeTeamSeason { get; set; }
 		public virtual TeamSeason AwayTeamSeason { get; set; }
+		public virtual Coach HomeCoach { get; set; }
+		public virtual Coach AwayCoach { get; set; }
 		public virtual VenueSeason VenueSeason { get; set; }
 		public virtual IList<TeamBoxscore> TeamBoxscores { get; set; }
 	}
