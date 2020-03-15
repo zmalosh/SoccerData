@@ -13,6 +13,7 @@ namespace SoccerData.Program.Tasks
 		{
 			Console.WriteLine("Hello World!");
 			SoccerDataContext context = null;
+			DateTime startTime = DateTime.Now;
 
 			try
 			{
@@ -116,6 +117,11 @@ namespace SoccerData.Program.Tasks
 					context.Dispose();
 				}
 			}
+
+			DateTime endTime = DateTime.Now;
+			TimeSpan runLength = endTime - startTime;
+			Console.WriteLine($"{ (runLength).TotalSeconds } SEC ({ runLength.Hours }:{ runLength.Minutes }:{ runLength.Seconds })");
+			Console.ReadKey();
 		}
 	}
 }
