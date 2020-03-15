@@ -37,6 +37,7 @@ namespace SoccerData.Model
 		public DbSet<TeamSeason> TeamSeasons { get; set; }
 		public DbSet<Fixture> Fixtures { get; set; }
 		public DbSet<Player> Players { get; set; }
+		public DbSet<PlayerSeason> PlayerSeasons { get; set; }
 		public DbSet<Coach> Coaches { get; set; }
 		public DbSet<TeamBoxscore> TeamBoxscores { get; set; }
 
@@ -121,12 +122,23 @@ namespace SoccerData.Model
 				e.HasKey(p => p.PlayerId);
 				e.Property(p => p.FirstName).HasMaxLength(64);
 				e.Property(p => p.LastName).HasMaxLength(64);
-				e.Property(p => p.FullName).HasMaxLength(128);
-				e.Property(p => p.Nationaity).HasMaxLength(64).IsRequired(false);
+				e.Property(p => p.PlayerName).HasMaxLength(128);
+				e.Property(p => p.Nationality).HasMaxLength(64).IsRequired(false);
 				e.Property(p => p.BirthCity).HasMaxLength(128).IsRequired(false);
 				e.Property(p => p.BirthCountry).HasMaxLength(64).IsRequired(false);
+				e.Property(t => t.DateOfBirth).HasColumnType("datetime");
 				e.Property(t => t.DateCreatedUtc).HasColumnType("datetime");
 				e.Property(t => t.DateLastModifiedUtc).HasColumnType("datetime");
+			});
+
+			modelBuilder.Entity<PlayerSeason>(e =>
+			{
+				e.HasKey(ps => ps.PlayerSeasonId);
+				e.Property(ps => ps.Position).HasMaxLength(16).IsRequired(false);
+				e.Property(t => t.DateCreatedUtc).HasColumnType("datetime");
+				e.Property(t => t.DateLastModifiedUtc).HasColumnType("datetime");
+				e.HasOne(ps => ps.Player).WithMany(p => p.PlayerSeasons).HasForeignKey(ps => ps.PlayerId).OnDelete(DeleteBehavior.ClientSetNull);
+				e.HasOne(ps => ps.CompetitionSeason).WithMany(cs => cs.PlayerSeasons).HasForeignKey(ps => ps.PlayerId).OnDelete(DeleteBehavior.ClientSetNull);
 			});
 
 			modelBuilder.Entity<Fixture>(e =>

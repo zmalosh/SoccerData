@@ -27,6 +27,7 @@ namespace SoccerData.Model
 
 		public virtual Competition Competition { get; set; }
 		public virtual ICollection<TeamSeason> TeamSeasons { get; set; }
+		public virtual IList<PlayerSeason> PlayerSeasons { get; set; }
 		public virtual ICollection<CompetitionSeasonRound> CompetitionSeasonRounds { get; set; }
 		public virtual ICollection<Fixture> Fixtures { get; set; }
 	}
