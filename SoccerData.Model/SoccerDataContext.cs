@@ -120,9 +120,10 @@ namespace SoccerData.Model
 			modelBuilder.Entity<Player>(e =>
 			{
 				e.HasKey(p => p.PlayerId);
-				e.Property(p => p.FirstName).HasMaxLength(64);
-				e.Property(p => p.LastName).HasMaxLength(64);
-				e.Property(p => p.PlayerName).HasMaxLength(128);
+				e.Property(p => p.FirstName).HasMaxLength(64).IsRequired(false);
+				e.Property(p => p.LastName).HasMaxLength(64).IsRequired(false);
+				e.Property(p => p.PlayerName).HasMaxLength(128).IsRequired(false);
+				e.Property(p => p.ApiFootballName).HasMaxLength(128).IsRequired(false);
 				e.Property(p => p.Nationality).HasMaxLength(64).IsRequired(false);
 				e.Property(p => p.BirthCity).HasMaxLength(128).IsRequired(false);
 				e.Property(p => p.BirthCountry).HasMaxLength(64).IsRequired(false);

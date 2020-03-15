@@ -14,6 +14,7 @@ namespace SoccerData.Model
 		public string Nationality { get; set; }
 		public string BirthCountry { get; set; }
 		public string BirthCity { get; set; }
+		public string ApiFootballName { get; set; }
 		public int ApiFootballId { get; set; }
 		public DateTime DateLastModifiedUtc { get; set; }
 		public DateTime DateCreatedUtc { get; set; }
