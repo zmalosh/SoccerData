@@ -77,7 +77,7 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 			}
 
 			[JsonProperty("height")]
-			public string _height { get; set; }
+			private string _height { get; set; }
 
 			[JsonIgnore]
 			public int? WeightInKg
@@ -93,7 +93,7 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 			}
 
 			[JsonProperty("weight")]
-			public string _weight { get; set; }
+			private string _weight { get; set; }
 		}
 
 		public static TeamSquadFeed FromJson(string json) => JsonConvert.DeserializeObject<TeamSquadFeed>(json, Converter.Settings);
