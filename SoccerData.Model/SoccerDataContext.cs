@@ -127,7 +127,7 @@ namespace SoccerData.Model
 				e.Property(p => p.Nationality).HasMaxLength(64).IsRequired(false);
 				e.Property(p => p.BirthCity).HasMaxLength(128).IsRequired(false);
 				e.Property(p => p.BirthCountry).HasMaxLength(64).IsRequired(false);
-				e.Property(t => t.DateOfBirth).HasColumnType("datetime");
+				e.Property(t => t.DateOfBirth).HasColumnType("date");
 				e.Property(t => t.DateCreatedUtc).HasColumnType("datetime");
 				e.Property(t => t.DateLastModifiedUtc).HasColumnType("datetime");
 			});

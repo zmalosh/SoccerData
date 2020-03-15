@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 
 namespace SoccerData.Processors.ApiFootball.Feeds
@@ -51,8 +52,22 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 			[JsonProperty("age")]
 			public int? Age { get; set; }
 
+			[JsonIgnore]
+			public DateTime? BirthDate
+			{
+				get
+				{
+					if (string.IsNullOrEmpty(this._birthdate_ddmmyyyy) || string.IsNullOrWhiteSpace(this._birthdate_ddmmyyyy)) { return null; }
+					if (!DateTime.TryParseExact(this._birthdate_ddmmyyyy, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime result))
+					{
+						return null;
+					}
+					return result.Date;
+				}
+			}
+
 			[JsonProperty("birth_date")]
-			public DateTime? BirthDate { get; set; }
+			private string _birthdate_ddmmyyyy { get; set; }
 
 			[JsonProperty("birth_place")]
 			public string BirthPlace { get; set; }
@@ -68,7 +83,7 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 			{
 				get
 				{
-					if (string.IsNullOrEmpty(this._height))
+					if (string.IsNullOrEmpty(this._height) || string.IsNullOrWhiteSpace(this._height))
 					{
 						return null;
 					}
@@ -84,7 +99,7 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 			{
 				get
 				{
-					if (string.IsNullOrEmpty(this._weight))
+					if (string.IsNullOrEmpty(this._weight) || string.IsNullOrWhiteSpace(this._weight))
 					{
 						return null;
 					}
