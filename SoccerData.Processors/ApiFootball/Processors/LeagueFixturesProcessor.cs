@@ -23,6 +23,7 @@ namespace SoccerData.Processors.ApiFootball.Processors
 			var dbCompetitionSeason = dbContext.CompetitionSeasons
 												.Include(x => x.CompetitionSeasonRounds)
 												.Include(x => x.Fixtures)
+												.Include(x => x.Competition)
 												.SingleOrDefault(x => x.CompetitionSeasonId == this.CompetitionSeasonId);
 			if (dbCompetitionSeason == null)
 			{
@@ -37,7 +38,7 @@ namespace SoccerData.Processors.ApiFootball.Processors
 
 			var teamIds = feed.Result.Fixtures.SelectMany(x => new[] { x.AwayTeam.TeamId, x.HomeTeam.TeamId }).Distinct().ToList();
 			var fixtureDict = dbCompetitionSeason.Fixtures.ToDictionary(x => x.ApiFootballId);
-			var teamDict = dbContext.TeamSeasons.Where(x => x.CompetitionSeasonId == this.CompetitionSeasonId && teamIds.Contains(x.Team.ApiFootballId)).ToDictionary(x => x.Team.ApiFootballId, y => y.TeamSeasonId);
+			var teamDict = dbContext.TeamSeasons.Include(x=>x.Team).Where(x => x.CompetitionSeasonId == this.CompetitionSeasonId && teamIds.Contains(x.Team.ApiFootballId)).ToDictionary(x => x.Team.ApiFootballId, y => y.TeamSeasonId);
 			var venueDict = dbContext.VenueSeasons.Where(x => x.Season == dbCompetitionSeason.Season).ToList();
 			var roundDict = dbCompetitionSeason.CompetitionSeasonRounds.ToDictionary(x => x.ApiFootballKey, y => y.CompetitionSeasonRoundId);
 
