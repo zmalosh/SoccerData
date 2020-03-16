@@ -86,6 +86,25 @@ namespace SoccerData.Program.Tasks
 					context.Dispose();
 					context = new SoccerDataContext(config);
 
+					var dbTeams = context.Teams.Where(x => x.TeamSeasons.Any(y => y.CompetitionSeasonId == competitionSeasonId)).ToList();
+					for (int j = 0; j < dbTeams.Count; j++)
+					{
+						Console.WriteLine($"LEAGUE {i + 1} OF {competitionSeasons.Count} - TEAM {j + 1} OF {dbTeams.Count}");
+						var dbTeam = dbTeams[j];
+						var teamSquadProcessor = new TeamSquadProcessor(dbTeam.ApiFootballId, competitionSeason);
+						teamSquadProcessor.Run(context);
+
+						if (j % 5 == 4)
+						{
+							Console.WriteLine("NEW CONTEXT");
+							context.Dispose();
+							context = new SoccerDataContext(config);
+						}
+					}
+
+					context.Dispose();
+					context = new SoccerDataContext(config);
+
 					var competitionSeasonFixtures = context.Fixtures.Where(x => x.CompetitionSeasonId == competitionSeasonId).ToList();
 					for (int j = 0; j < competitionSeasonFixtures.Count; j++)
 					{
