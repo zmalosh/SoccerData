@@ -18,5 +18,7 @@ namespace SoccerData.Model
 
 		public virtual Player Player { get; set; }
 		public virtual CompetitionSeason CompetitionSeason { get; set; }
+		public virtual IList<FixtureEvent> FixtureEvents { get; set; }
+		public virtual IList<FixtureEvent> SecondaryFixtureEvents { get; set; }
 	}
 }

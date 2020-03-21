@@ -40,6 +40,7 @@ namespace SoccerData.Model
 		public DbSet<PlayerSeason> PlayerSeasons { get; set; }
 		public DbSet<Coach> Coaches { get; set; }
 		public DbSet<TeamBoxscore> TeamBoxscores { get; set; }
+		public DbSet<FixtureEvent> FixtureEvents { get; set; }
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
@@ -132,16 +133,6 @@ namespace SoccerData.Model
 				e.Property(t => t.DateLastModifiedUtc).HasColumnType("datetime");
 			});
 
-			modelBuilder.Entity<PlayerSeason>(e =>
-			{
-				e.HasKey(ps => ps.PlayerSeasonId);
-				e.Property(ps => ps.Position).HasMaxLength(16).IsRequired(false);
-				e.Property(t => t.DateCreatedUtc).HasColumnType("datetime");
-				e.Property(t => t.DateLastModifiedUtc).HasColumnType("datetime");
-				e.HasOne(ps => ps.Player).WithMany(p => p.PlayerSeasons).HasForeignKey(ps => ps.PlayerId).OnDelete(DeleteBehavior.ClientSetNull);
-				e.HasOne(ps => ps.CompetitionSeason).WithMany(cs => cs.PlayerSeasons).HasForeignKey(ps => ps.PlayerId).OnDelete(DeleteBehavior.ClientSetNull);
-			});
-
 			modelBuilder.Entity<Fixture>(e =>
 			{
 				e.HasKey(f => f.FixtureId);
@@ -177,6 +168,18 @@ namespace SoccerData.Model
 				e.HasOne(tb => tb.Fixture).WithMany(f => f.TeamBoxscores).HasForeignKey(tb => tb.FixtureId).OnDelete(DeleteBehavior.ClientSetNull);
 			});
 
+			modelBuilder.Entity<FixtureEvent>(e =>
+			{
+				e.HasKey(fe => fe.EventId);
+				e.Property(fe => fe.EventComment).HasMaxLength(512).IsRequired(false);
+				e.Property(fe => fe.EventDetail).HasMaxLength(64).IsRequired(false);
+				e.Property(fe => fe.EventType).HasMaxLength(32).IsRequired(false);
+				e.Property(fe => fe.DateCreatedUtc).HasColumnType("datetime");
+				e.Property(fe => fe.DateLastModifiedUtc).HasColumnType("datetime");
+				e.HasOne(fe => fe.Fixture).WithMany(f => f.FixtureEvents).HasForeignKey(fe => fe.FixtureId).OnDelete(DeleteBehavior.ClientSetNull);
+				e.HasOne(fe => fe.TeamSeason).WithMany(f => f.FixtureEvents).HasForeignKey(fe => fe.TeamSeasonId).OnDelete(DeleteBehavior.ClientSetNull);
+			});
+
 			modelBuilder.Entity<TeamSeason>(e =>
 			{
 				e.HasKey(ts => ts.TeamSeasonId);
@@ -191,6 +194,18 @@ namespace SoccerData.Model
 				e.HasMany(ts => ts.AwayFixtures).WithOne(f => f.AwayTeamSeason).HasForeignKey(f => f.AwayTeamSeasonId).OnDelete(DeleteBehavior.ClientSetNull);
 				e.HasMany(ts => ts.TeamBoxscores).WithOne(f => f.TeamSeason).HasForeignKey(f => f.TeamSeasonId).OnDelete(DeleteBehavior.ClientSetNull);
 				e.HasMany(ts => ts.OppTeamBoxscores).WithOne(f => f.OppTeamSeason).HasForeignKey(f => f.OppTeamSeasonId).OnDelete(DeleteBehavior.ClientSetNull);
+			});
+
+			modelBuilder.Entity<PlayerSeason>(e =>
+			{
+				e.HasKey(ps => ps.PlayerSeasonId);
+				e.Property(ps => ps.Position).HasMaxLength(16).IsRequired(false);
+				e.Property(t => t.DateCreatedUtc).HasColumnType("datetime");
+				e.Property(t => t.DateLastModifiedUtc).HasColumnType("datetime");
+				e.HasOne(ps => ps.Player).WithMany(p => p.PlayerSeasons).HasForeignKey(ps => ps.PlayerId).OnDelete(DeleteBehavior.ClientSetNull);
+				e.HasOne(ps => ps.CompetitionSeason).WithMany(cs => cs.PlayerSeasons).HasForeignKey(ps => ps.PlayerId).OnDelete(DeleteBehavior.ClientSetNull);
+				e.HasMany(ps => ps.FixtureEvents).WithOne(fe => fe.PlayerSeason).HasForeignKey(fe => fe.PlayerSeasonId).OnDelete(DeleteBehavior.ClientSetNull);
+				e.HasMany(ps => ps.FixtureEvents).WithOne(fe => fe.SecondaryPlayerSeason).HasForeignKey(fe => fe.SecondaryPlayerSeasonId).OnDelete(DeleteBehavior.ClientSetNull);
 			});
 		}
 

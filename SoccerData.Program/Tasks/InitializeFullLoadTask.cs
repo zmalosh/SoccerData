@@ -63,7 +63,8 @@ namespace SoccerData.Program.Tasks
 				var competitionSeasons = context.CompetitionSeasons
 													//.Where(x => desiredLeagueIds == null || desiredLeagueIds.Contains(x.ApiFootballId))
 													//.Where(x => x.StartDate.Date >= new DateTime(2019, 08, 01))
-													.Where(x => (x.IsCurrent && x.EndDate.Date >= DateTime.Now.Date) || (new List<string> { "MX", "RU", "CL", "DZ", "AR", "TR", "UA", "AU", "IN", "BY", "BR", "CR" }).Contains(x.Competition.Country.CountryAbbr)) // CURRENT || (PAST FROM COUNTRIES NOT CURRENTLY CANCELLED DUE TO COVID-19)
+													//.Where(x => (x.IsCurrent && x.EndDate.Date >= DateTime.Now.Date) || (new List<string> { "MX", "RU", "CL", "DZ", "AR", "TR", "UA", "AU", "IN", "BY", "BR", "CR" }).Contains(x.Competition.Country.CountryAbbr)) // CURRENT || (PAST FROM COUNTRIES NOT CURRENTLY CANCELLED DUE TO COVID-19)
+													.Where(x => (new List<string> { "MX", "RU", "CL", "DZ", "AR", "TR", "UA", "AU", "IN", "BY", "BR", "CR" }).Contains(x.Competition.Country.CountryAbbr)) // (PAST FROM COUNTRIES NOT CURRENTLY CANCELLED DUE TO COVID-19)
 													.OrderBy(x => x.CompetitionSeasonId)
 													.ToList();
 
@@ -74,11 +75,11 @@ namespace SoccerData.Program.Tasks
 					var competitionSeason = competitionSeasons[i];
 					int competitionSeasonId = competitionSeason.CompetitionSeasonId;
 
-					var teamsProcessor = new TeamsProcessor(competitionSeasonId);
-					teamsProcessor.Run(context);
+					//var teamsProcessor = new TeamsProcessor(competitionSeasonId);
+					//teamsProcessor.Run(context);
 
-					var roundsProcessor = new CompetitionSeasonRoundsProcessor(competitionSeasonId);
-					roundsProcessor.Run(context);
+					//var roundsProcessor = new CompetitionSeasonRoundsProcessor(competitionSeasonId);
+					//roundsProcessor.Run(context);
 
 					var leagueFixturesProcessor = new LeagueFixturesProcessor(competitionSeasonId);
 					leagueFixturesProcessor.Run(context);
@@ -86,46 +87,46 @@ namespace SoccerData.Program.Tasks
 					context.Dispose();
 					context = new SoccerDataContext(config);
 
-					var dbTeams = context.Teams.Where(x => x.TeamSeasons.Any(y => y.CompetitionSeasonId == competitionSeasonId)).ToList();
-					for (int j = 0; j < dbTeams.Count; j++)
-					{
-						Console.WriteLine($"LEAGUE {i + 1} OF {competitionSeasons.Count} - TEAM {j + 1} OF {dbTeams.Count}");
-						var dbTeam = dbTeams[j];
-						var teamSquadProcessor = new TeamSquadProcessor(dbTeam.ApiFootballId, competitionSeason);
-						teamSquadProcessor.Run(context);
+					//var dbTeams = context.Teams.Where(x => x.TeamSeasons.Any(y => y.CompetitionSeasonId == competitionSeasonId)).ToList();
+					//for (int j = 0; j < dbTeams.Count; j++)
+					//{
+					//	Console.WriteLine($"LEAGUE {i + 1} OF {competitionSeasons.Count} - TEAM {j + 1} OF {dbTeams.Count}");
+					//	var dbTeam = dbTeams[j];
+					//	var teamSquadProcessor = new TeamSquadProcessor(dbTeam.ApiFootballId, competitionSeason);
+					//	teamSquadProcessor.Run(context);
 
-						if (j % 5 == 4)
-						{
-							Console.WriteLine("NEW CONTEXT");
-							context.Dispose();
-							context = new SoccerDataContext(config);
-						}
-					}
+					//	if (j % 5 == 4)
+					//	{
+					//		Console.WriteLine("NEW CONTEXT");
+					//		context.Dispose();
+					//		context = new SoccerDataContext(config);
+					//	}
+					//}
 
-					context.Dispose();
-					context = new SoccerDataContext(config);
+					//context.Dispose();
+					//context = new SoccerDataContext(config);
 
-					var competitionSeasonFixtures = context.Fixtures.Where(x => x.CompetitionSeasonId == competitionSeasonId).ToList();
-					for (int j = 0; j < competitionSeasonFixtures.Count; j++)
-					{
-						Console.WriteLine($"LEAGUE {i + 1} OF {competitionSeasons.Count} - FIXTURE {j + 1} OF {competitionSeasonFixtures.Count}");
+					//var competitionSeasonFixtures = context.Fixtures.Where(x => x.CompetitionSeasonId == competitionSeasonId).ToList();
+					//for (int j = 0; j < competitionSeasonFixtures.Count; j++)
+					//{
+					//	Console.WriteLine($"LEAGUE {i + 1} OF {competitionSeasons.Count} - FIXTURE {j + 1} OF {competitionSeasonFixtures.Count}");
 
-						var dbFixture = competitionSeasonFixtures[j];
+					//	var dbFixture = competitionSeasonFixtures[j];
 
-						if (string.Equals("Match Finished", dbFixture.Status, StringComparison.CurrentCultureIgnoreCase))
-						{
-							// TODO: PROCESS FIXTURE DATA (INCLUDE SETTING HasTeamBoxscores VALUE ON FIXTURE)
-							var fixtureProcessor = new FixtureProcessor(dbFixture.ApiFootballId);
-							fixtureProcessor.Run(context);
-						}
+					//	if (string.Equals("Match Finished", dbFixture.Status, StringComparison.CurrentCultureIgnoreCase))
+					//	{
+					//		// TODO: PROCESS FIXTURE DATA (INCLUDE SETTING HasTeamBoxscores VALUE ON FIXTURE)
+					//		var fixtureProcessor = new FixtureProcessor(dbFixture.ApiFootballId);
+					//		fixtureProcessor.Run(context);
+					//	}
 
-						if (j % 30 == 29)
-						{
-							Console.WriteLine("NEW CONTEXT");
-							context.Dispose();
-							context = new SoccerDataContext(config);
-						}
-					}
+					//	if (j % 30 == 29)
+					//	{
+					//		Console.WriteLine("NEW CONTEXT");
+					//		context.Dispose();
+					//		context = new SoccerDataContext(config);
+					//	}
+					//}
 					context.SaveChanges();
 				}
 			}

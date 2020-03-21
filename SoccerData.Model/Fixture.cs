@@ -46,5 +46,6 @@ namespace SoccerData.Model
 		public virtual Coach AwayCoach { get; set; }
 		public virtual VenueSeason VenueSeason { get; set; }
 		public virtual IList<TeamBoxscore> TeamBoxscores { get; set; }
+		public virtual IList<FixtureEvent> FixtureEvents { get; set; }
 	}
 }
