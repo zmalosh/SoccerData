@@ -131,7 +131,7 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 			public int? SecondaryPlayerId { get; set; } // ASSIST ON GOAL EVENTS, PLAYER IN ON SUBS
 
 			[JsonProperty("assist")]
-			public string Assist { get; set; } // ASSIST ON GOAL EVENTS, PLAYER IN ON SUBS
+			public string SecondaryPlayer { get; set; } // ASSIST ON GOAL EVENTS, PLAYER IN ON SUBS
 
 			[JsonProperty("type")]
 			public string Type { get; set; }
