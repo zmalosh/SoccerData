@@ -6,11 +6,11 @@ namespace SoccerData.Model
 {
 	public class FixtureEvent : IEntity
 	{
-		public int EventId { get; set; }
+		public int FixtureEventId { get; set; }
 		public int FixtureId { get; set; }
 		public int TeamSeasonId { get; set; }
-		public int PlayerSeasonId { get; set; }
-		public int SecondaryPlayerSeasonId { get; set; }
+		public int? PlayerSeasonId { get; set; }
+		public int? SecondaryPlayerSeasonId { get; set; }
 		public string EventType { get; set; }
 		public string EventDetail { get; set; }
 		public int GameTime { get; set; }

@@ -170,10 +170,10 @@ namespace SoccerData.Model
 
 			modelBuilder.Entity<FixtureEvent>(e =>
 			{
-				e.HasKey(fe => fe.EventId);
+				e.HasKey(fe => fe.FixtureEventId);
 				e.Property(fe => fe.EventComment).HasMaxLength(512).IsRequired(false);
 				e.Property(fe => fe.EventDetail).HasMaxLength(64).IsRequired(false);
-				e.Property(fe => fe.EventType).HasMaxLength(32).IsRequired(false);
+				e.Property(fe => fe.EventType).HasMaxLength(32);
 				e.Property(fe => fe.DateCreatedUtc).HasColumnType("datetime");
 				e.Property(fe => fe.DateLastModifiedUtc).HasColumnType("datetime");
 				e.HasOne(fe => fe.Fixture).WithMany(f => f.FixtureEvents).HasForeignKey(fe => fe.FixtureId).OnDelete(DeleteBehavior.ClientSetNull);
