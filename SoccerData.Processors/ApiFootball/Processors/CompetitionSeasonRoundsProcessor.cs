@@ -20,7 +20,10 @@ namespace SoccerData.Processors.ApiFootball.Processors
 
 		public void Run(SoccerDataContext dbContext)
 		{
-			var dbCompetitionSeason = dbContext.CompetitionSeasons.Include(x => x.CompetitionSeasonRounds).SingleOrDefault(x => x.CompetitionSeasonId == this.CompetitionSeasonId);
+			var dbCompetitionSeason = dbContext.CompetitionSeasons
+												.Include(x => x.CompetitionSeasonRounds)
+												.Include(x => x.Competition)
+												.SingleOrDefault(x => x.CompetitionSeasonId == this.CompetitionSeasonId);
 			if (dbCompetitionSeason == null)
 			{
 				return;
