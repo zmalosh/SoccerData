@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using SoccerData.Model;
+using Microsoft.EntityFrameworkCore;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SoccerData.Processors.ApiFootball.Processors
 {
@@ -10,10 +12,14 @@ namespace SoccerData.Processors.ApiFootball.Processors
 	{
 		private readonly int ApiFootballFixtureId;
 		private readonly JsonUtility JsonUtility;
+		private readonly bool CheckEntitiesExist;
 
-		public FixtureProcessor(int apiFootballFixtureId)
+		private const int NullIntDictKey = int.MinValue;
+
+		public FixtureProcessor(int apiFootballFixtureId, bool checkEntitiesExist = true)
 		{
 			this.ApiFootballFixtureId = apiFootballFixtureId;
+			this.CheckEntitiesExist = checkEntitiesExist;
 			this.JsonUtility = new JsonUtility(120 * 24 * 60 * 60, sourceType: JsonUtility.JsonSourceType.ApiFootball); // 230K+ FIXTURES.... SAVE FINISHED GAMES FOR A LONG TIME (120 DAYS?) TO AVOID QUOTA ISSUES
 		}
 
@@ -38,6 +44,14 @@ namespace SoccerData.Processors.ApiFootball.Processors
 			int dbFixtureId = dbFixture.FixtureId;
 			int dbHomeTeamSeasonId = dbFixture.HomeTeamSeasonId.Value;
 			int dbAwayTeamSeasonId = dbFixture.AwayTeamSeasonId.Value;
+			int apiAwayTeamId = feedFixture.AwayTeam.TeamId;
+			int apiHomeTeamId = feedFixture.HomeTeam.TeamId;
+
+			int? homeCoachId = null;
+			int? awayCoachId = null;
+
+			var apiPlayerBases = GetApiPlayerBases(feedFixture);
+			var dbPlayerSeasonDict = GetDbPlayerSeasonDict(dbContext, apiPlayerBases, dbFixture.CompetitionSeasonId);
 
 			bool hasUpdate = false;
 
@@ -78,44 +92,72 @@ namespace SoccerData.Processors.ApiFootball.Processors
 			}
 			#endregion GET FORMATIONS
 
-			#region ENSURE COACHES EXIST
-			int? homeCoachId = null;
-			int? awayCoachId = null;
-			if (homeLineup != null || awayLineup != null)
-			{
-				var apiCoachIds = new[] { homeLineup.CoachId, awayLineup.CoachId };
-				var dbCoaches = dbContext.Coaches.Where(x => apiCoachIds.Contains(x.ApiFootballId)).ToDictionary(x => x.ApiFootballId, y => y);
 
-				if (homeLineup?.CoachId != null)
+			#region ENSURE COACHES EXIST
+			if (this.CheckEntitiesExist)
+			{
+				if (homeLineup != null || awayLineup != null)
 				{
-					if (!dbCoaches.TryGetValue(homeLineup.CoachId.Value, out Coach dbHomeCoach))
+					var apiCoachIds = new[] { homeLineup.CoachId, awayLineup.CoachId };
+					var dbCoaches = dbContext.Coaches.Where(x => apiCoachIds.Contains(x.ApiFootballId)).ToDictionary(x => x.ApiFootballId, y => y);
+
+					if (homeLineup?.CoachId != null)
 					{
-						dbHomeCoach = new Coach
+						if (!dbCoaches.TryGetValue(homeLineup.CoachId.Value, out Coach dbHomeCoach))
 						{
-							ApiFootballId = homeLineup.CoachId.Value,
-							CoachName = homeLineup.Coach
-						};
-						dbContext.Coaches.Add(dbHomeCoach);
-						dbContext.SaveChanges();
+							dbHomeCoach = new Coach
+							{
+								ApiFootballId = homeLineup.CoachId.Value,
+								CoachName = homeLineup.Coach
+							};
+							dbContext.Coaches.Add(dbHomeCoach);
+							dbContext.SaveChanges();
+						}
+						homeCoachId = dbHomeCoach.CoachId;
 					}
-					homeCoachId = dbHomeCoach.CoachId;
-				}
-				if (awayLineup?.CoachId != null)
-				{
-					if (!dbCoaches.TryGetValue(awayLineup.CoachId.Value, out Coach dbAwayCoach))
+					if (awayLineup?.CoachId != null)
 					{
-						dbAwayCoach = new Coach
+						if (!dbCoaches.TryGetValue(awayLineup.CoachId.Value, out Coach dbAwayCoach))
 						{
-							ApiFootballId = awayLineup.CoachId.Value,
-							CoachName = awayLineup.Coach
-						};
-						dbContext.Coaches.Add(dbAwayCoach);
-						dbContext.SaveChanges();
+							dbAwayCoach = new Coach
+							{
+								ApiFootballId = awayLineup.CoachId.Value,
+								CoachName = awayLineup.Coach
+							};
+							dbContext.Coaches.Add(dbAwayCoach);
+							dbContext.SaveChanges();
+						}
+						awayCoachId = dbAwayCoach.CoachId;
 					}
-					awayCoachId = dbAwayCoach.CoachId;
 				}
 			}
 			#endregion ENSURE COACHES EXIST 
+
+			#region ENSURE PLAYERS EXIST
+			if (this.CheckEntitiesExist)
+			{
+				var missingApiPlayerIds = apiPlayerBases?.Select(x => x.PlayerId).Where(x => !dbPlayerSeasonDict.ContainsKey(x)).ToList();
+				if (missingApiPlayerIds != null && missingApiPlayerIds.Count > 0)
+				{
+					foreach (var missingApiPlayerId in missingApiPlayerIds)
+					{
+						var apiPlayerBase = apiPlayerBases.Single(x => x.PlayerId == missingApiPlayerId);
+						var dbPlayerSeason = new PlayerSeason
+						{
+							Player = new Player
+							{
+								ApiFootballId = missingApiPlayerId,
+								PlayerName = apiPlayerBase.PlayerName
+							},
+							CompetitionSeasonId = dbFixture.CompetitionSeasonId
+						};
+						dbContext.Add(dbPlayerSeason);
+					}
+					dbContext.SaveChanges();
+					dbPlayerSeasonDict = GetDbPlayerSeasonDict(dbContext, apiPlayerBases, dbFixture.CompetitionSeasonId);
+				}
+			}
+			#endregion ENSURE PLAYERS EXIST
 
 			#region UPDATE FORAMATION AND COACH IF NECESSARY
 			if (homeCoachId.HasValue && dbFixture.HomeCoachId != homeCoachId)
@@ -139,6 +181,62 @@ namespace SoccerData.Processors.ApiFootball.Processors
 				hasUpdate = true;
 			}
 			#endregion UPDATE FORAMATION AND COACH IF NECESSARY
+
+			#region FIXTURE EVENTS
+			var dbFixtureEvents = dbContext.FixtureEvents.Where(x => x.FixtureId == dbFixtureId).ToDictionary(x => GetFixtureEventKey(x));
+			var apiFixtureEvents = feedFixture.Events?.Where(x => x.TeamId.HasValue).ToList();
+			if (apiFixtureEvents != null && apiFixtureEvents.Count > 0)
+			{
+				foreach (var apiFixtureEvent in apiFixtureEvents)
+				{
+					int dbTeamSeasonId = apiFixtureEvent.TeamId == apiAwayTeamId ? dbAwayTeamSeasonId : dbHomeTeamSeasonId;
+					int? dbPlayerSeasonId = apiFixtureEvent.PlayerId.HasValue ? dbPlayerSeasonDict[apiFixtureEvent.PlayerId.Value] : (int?)null;
+					int? dbSecondaryPlayerSeasonId = apiFixtureEvent.SecondaryPlayerId.HasValue ? dbPlayerSeasonDict[apiFixtureEvent.SecondaryPlayerId.Value] : (int?)null;
+
+					var eventKey = GetFixtureEventKey(apiFixtureEvent.Elapsed, apiFixtureEvent.ElapsedPlus, dbPlayerSeasonId, dbTeamSeasonId, apiFixtureEvent.EventType, apiFixtureEvent.EventDetail);
+					if (!dbFixtureEvents.TryGetValue(eventKey, out FixtureEvent dbFixtureEvent))
+					{
+						dbFixtureEvent = new FixtureEvent
+						{
+							EventComment = apiFixtureEvent.EventComments,
+							EventDetail = apiFixtureEvent.EventDetail,
+							EventType = apiFixtureEvent.EventType,
+							FixtureId = dbFixtureId,
+							EventTime = apiFixtureEvent.Elapsed,
+							EventTimePlus = apiFixtureEvent.ElapsedPlus,
+							PlayerSeasonId = dbPlayerSeasonId,
+							SecondaryPlayerSeasonId = dbSecondaryPlayerSeasonId,
+							TeamSeasonId = dbTeamSeasonId
+						};
+						dbContext.FixtureEvents.Add(dbFixtureEvent);
+						hasUpdate = true;
+					}
+					else
+					{
+						dbFixtureEvents.Remove(eventKey);
+						if ((!string.IsNullOrEmpty(apiFixtureEvent.EventComments) && dbFixtureEvent.EventComment != apiFixtureEvent.EventComments)
+							|| (!string.IsNullOrEmpty(apiFixtureEvent.EventDetail) && dbFixtureEvent.EventDetail != apiFixtureEvent.EventDetail)
+							|| (dbSecondaryPlayerSeasonId.HasValue && (!dbFixtureEvent.SecondaryPlayerSeasonId.HasValue || dbFixtureEvent.SecondaryPlayerSeasonId != dbSecondaryPlayerSeasonId))
+							|| (!dbSecondaryPlayerSeasonId.HasValue && dbFixtureEvent.SecondaryPlayerSeasonId.HasValue))
+						{
+							dbFixtureEvent.EventComment = apiFixtureEvent.EventComments;
+							dbFixtureEvent.EventDetail = apiFixtureEvent.EventDetail;
+							dbFixtureEvent.SecondaryPlayerSeasonId = dbSecondaryPlayerSeasonId;
+						}
+						hasUpdate = true;
+					}
+				}
+				if (dbFixtureEvents.Count > 0)
+				{
+					foreach (var dbFixtureEventKVP in dbFixtureEvents)
+					{
+						var dbFixtureEvent = dbFixtureEventKVP.Value;
+						dbContext.FixtureEvents.Remove(dbFixtureEvent);
+					}
+					hasUpdate = true;
+				}
+			}
+			#endregion FIXTURE EVENTS
 
 			#region TEAM BOXSCORE
 
@@ -205,6 +303,96 @@ namespace SoccerData.Processors.ApiFootball.Processors
 			{
 				dbContext.SaveChanges();
 			}
+		}
+
+		private Dictionary<int, int> GetDbPlayerSeasonDict(SoccerDataContext dbContext, List<ApiPlayerBase> apiPlayerBases, int dbCompetitionSeasonId)
+		{
+			if (apiPlayerBases == null || apiPlayerBases.Count == 0)
+			{
+				return null;
+			}
+
+			var apiPlayerIds = apiPlayerBases.Select(x => x.PlayerId).ToList();
+			return dbContext.PlayerSeasons
+							.Include(x => x.Player)
+							.Where(x => x.CompetitionSeasonId == dbCompetitionSeasonId && apiPlayerIds.Contains(x.Player.ApiFootballId))
+							.ToDictionary(x => x.Player.ApiFootballId, y => y.PlayerSeasonId);
+		}
+
+		private List<ApiPlayerBase> GetApiPlayerBases(Feeds.FixtureFeed.ApiFixture feedFixture)
+		{
+			var apiPlayerBasesFromPlayers = feedFixture.Players?.Where(x => x.PlayerId.HasValue).Select(x => new ApiPlayerBase(x.PlayerId.Value, x.PlayerName)).ToList();
+			var apiPlayerBasesFromEvents = feedFixture.Events?
+														.SelectMany(x => new[] { new { PlayerId = x.PlayerId, PlayerName = x.PlayerName }, new { PlayerId = x.SecondaryPlayerId, PlayerName = x.SecondaryPlayerName } })
+														.Where(x => x.PlayerId.HasValue && !string.IsNullOrEmpty(x.PlayerName))
+														.Select(x => new ApiPlayerBase(x.PlayerId.Value, x.PlayerName))
+														.ToList();
+
+			var apiPlayerBasesFromLineups = feedFixture.Lineups?
+															.Where(x => x.Value.Starters != null && x.Value.Starters.Count > 0)
+															.SelectMany(x =>
+																x.Value.Starters
+																		.Where(y => y.PlayerId.HasValue && !string.IsNullOrEmpty(y.PlayerName))
+																		.Select(y => new ApiPlayerBase(y.PlayerId.Value, y.PlayerName))
+															)
+															.ToList();
+			if (apiPlayerBasesFromLineups != null)
+			{
+				var apiPlayerBaseSubstitutes = feedFixture.Lineups?
+															.Where(x => x.Value.Substitutes != null && x.Value.Substitutes.Count > 0)
+															.SelectMany(x =>
+																x.Value.Substitutes
+																		.Where(y => y.PlayerId.HasValue && !string.IsNullOrEmpty(y.PlayerName))
+																		.Select(y => new ApiPlayerBase(y.PlayerId.Value, y.PlayerName))
+															)
+															.ToList();
+			}
+
+			var apiPlayerBases = apiPlayerBasesFromPlayers ?? apiPlayerBasesFromLineups ?? apiPlayerBasesFromEvents;
+			if (apiPlayerBasesFromPlayers != null)
+			{
+				if (apiPlayerBasesFromLineups != null)
+				{
+					apiPlayerBases.AddRange(apiPlayerBasesFromLineups);
+				}
+				if (apiPlayerBasesFromEvents != null)
+				{
+					apiPlayerBases.AddRange(apiPlayerBasesFromEvents);
+				}
+			}
+			else if (apiPlayerBasesFromLineups != null)
+			{
+				if (apiPlayerBasesFromEvents != null)
+				{
+					apiPlayerBases.AddRange(apiPlayerBasesFromEvents);
+				}
+			}
+			if (apiPlayerBases != null)
+			{
+				apiPlayerBases = apiPlayerBases.Distinct(new ApiPlayerBaseComparer()).ToList();
+			}
+			return apiPlayerBases;
+		}
+
+		// TEAM IS REQUIRED (API FIXTURE ID 131874)
+		private (int, int, int, int, string, string) GetFixtureEventKey(FixtureEvent fixtureEvent)
+		{
+			return (fixtureEvent.EventTime,
+					fixtureEvent.EventTimePlus ?? NullIntDictKey,
+					fixtureEvent.PlayerSeasonId ?? NullIntDictKey,
+					fixtureEvent.TeamSeasonId,
+					fixtureEvent.EventType,
+					fixtureEvent.EventDetail);
+		}
+
+		private (int, int, int, int, string, string) GetFixtureEventKey(int gameTime, int? gameTimePlus, int? playerSeasonId, int teamSeasonId, string eventType, string eventDetail)
+		{
+			return (gameTime,
+					gameTimePlus ?? NullIntDictKey,
+					playerSeasonId ?? NullIntDictKey,
+					teamSeasonId,
+					eventType,
+					eventDetail);
 		}
 
 		#region TEAM BOXSCORE HELPERS
@@ -364,5 +552,32 @@ namespace SoccerData.Processors.ApiFootball.Processors
 			return null;
 		}
 		#endregion TEAM BOXSCORE HELPERS
+
+		#region HELPER CLASSES
+		private class ApiPlayerBase
+		{
+			public int PlayerId { get; set; }
+			public string PlayerName { get; set; }
+
+			public ApiPlayerBase(int playerId, string playerName)
+			{
+				this.PlayerId = playerId;
+				this.PlayerName = playerName;
+			}
+		}
+
+		private class ApiPlayerBaseComparer : IEqualityComparer<ApiPlayerBase>
+		{
+			public bool Equals([AllowNull] ApiPlayerBase x, [AllowNull] ApiPlayerBase y)
+			{
+				return x.PlayerId == y.PlayerId;
+			}
+
+			public int GetHashCode([DisallowNull] ApiPlayerBase obj)
+			{
+				return base.GetHashCode();
+			}
+		}
+		#endregion HELPER CLASSES
 	}
 }

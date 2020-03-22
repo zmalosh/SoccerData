@@ -13,8 +13,8 @@ namespace SoccerData.Model
 		public int? SecondaryPlayerSeasonId { get; set; }
 		public string EventType { get; set; }
 		public string EventDetail { get; set; }
-		public int GameTime { get; set; }
-		public int? GameTimePlus { get; set; }
+		public int EventTime { get; set; }
+		public int? EventTimePlus { get; set; }
 		public string EventComment { get; set; }
 		public DateTime DateLastModifiedUtc { get; set; }
 		public DateTime DateCreatedUtc { get; set; }

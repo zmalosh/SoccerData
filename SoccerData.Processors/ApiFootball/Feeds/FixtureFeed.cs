@@ -125,22 +125,22 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 			public int? PlayerId { get; set; } // PLAYER OUT ON SUBS
 
 			[JsonProperty("player")]
-			public string Player { get; set; } // PLAYER OUT ON SUBS
+			public string PlayerName { get; set; } // PLAYER OUT ON SUBS
 
 			[JsonProperty("assist_id")]
 			public int? SecondaryPlayerId { get; set; } // ASSIST ON GOAL EVENTS, PLAYER IN ON SUBS
 
 			[JsonProperty("assist")]
-			public string SecondaryPlayer { get; set; } // ASSIST ON GOAL EVENTS, PLAYER IN ON SUBS
+			public string SecondaryPlayerName { get; set; } // ASSIST ON GOAL EVENTS, PLAYER IN ON SUBS
 
 			[JsonProperty("type")]
-			public string Type { get; set; }
+			public string EventType { get; set; }
 
 			[JsonProperty("detail")]
-			public string Detail { get; set; }
+			public string EventDetail { get; set; }
 
 			[JsonProperty("comments")]
-			public string Comments { get; set; }
+			public string EventComments { get; set; }
 		}
 
 		public class ApiLeague
@@ -185,13 +185,13 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 			public int? PlayerId { get; set; }
 
 			[JsonProperty("player")]
-			public string Player { get; set; }
+			public string PlayerName { get; set; }
 
 			[JsonProperty("number")]
 			public int? Number { get; set; }
 
 			[JsonProperty("pos")]
-			public string Pos { get; set; }
+			public string Position { get; set; }
 		}
 
 		public class Player

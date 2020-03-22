@@ -68,7 +68,7 @@ namespace SoccerData.Program.Tasks
 													.OrderBy(x => x.CompetitionSeasonId)
 													.ToList();
 
-				int i = 0;
+				int i = 109;
 				for (; i < competitionSeasons.Count; i++)
 				{
 					Console.WriteLine($"START LEAGUE {i + 1} OF {competitionSeasons.Count}");
@@ -78,8 +78,8 @@ namespace SoccerData.Program.Tasks
 					//var teamsProcessor = new TeamsProcessor(competitionSeasonId);
 					//teamsProcessor.Run(context);
 
-					//var roundsProcessor = new CompetitionSeasonRoundsProcessor(competitionSeasonId);
-					//roundsProcessor.Run(context);
+					var roundsProcessor = new CompetitionSeasonRoundsProcessor(competitionSeasonId);
+					roundsProcessor.Run(context);
 
 					var leagueFixturesProcessor = new LeagueFixturesProcessor(competitionSeasonId);
 					leagueFixturesProcessor.Run(context);
@@ -106,27 +106,27 @@ namespace SoccerData.Program.Tasks
 					//context.Dispose();
 					//context = new SoccerDataContext(config);
 
-					//var competitionSeasonFixtures = context.Fixtures.Where(x => x.CompetitionSeasonId == competitionSeasonId).ToList();
-					//for (int j = 0; j < competitionSeasonFixtures.Count; j++)
-					//{
-					//	Console.WriteLine($"LEAGUE {i + 1} OF {competitionSeasons.Count} - FIXTURE {j + 1} OF {competitionSeasonFixtures.Count}");
+					var competitionSeasonFixtures = context.Fixtures.Where(x => x.CompetitionSeasonId == competitionSeasonId).ToList();
+					for (int j = 0; j < competitionSeasonFixtures.Count; j++)
+					{
+						Console.WriteLine($"LEAGUE {i + 1} OF {competitionSeasons.Count} - FIXTURE {j + 1} OF {competitionSeasonFixtures.Count}");
 
-					//	var dbFixture = competitionSeasonFixtures[j];
+						var dbFixture = competitionSeasonFixtures[j];
 
-					//	if (string.Equals("Match Finished", dbFixture.Status, StringComparison.CurrentCultureIgnoreCase))
-					//	{
-					//		// TODO: PROCESS FIXTURE DATA (INCLUDE SETTING HasTeamBoxscores VALUE ON FIXTURE)
-					//		var fixtureProcessor = new FixtureProcessor(dbFixture.ApiFootballId);
-					//		fixtureProcessor.Run(context);
-					//	}
+						if (string.Equals("Match Finished", dbFixture.Status, StringComparison.CurrentCultureIgnoreCase))
+						{
+							// TODO: PROCESS FIXTURE DATA (INCLUDE SETTING HasTeamBoxscores VALUE ON FIXTURE)
+							var fixtureProcessor = new FixtureProcessor(dbFixture.ApiFootballId);
+							fixtureProcessor.Run(context);
+						}
 
-					//	if (j % 30 == 29)
-					//	{
-					//		Console.WriteLine("NEW CONTEXT");
-					//		context.Dispose();
-					//		context = new SoccerDataContext(config);
-					//	}
-					//}
+						if (j % 30 == 29)
+						{
+							Console.WriteLine("NEW CONTEXT");
+							context.Dispose();
+							context = new SoccerDataContext(config);
+						}
+					}
 					context.SaveChanges();
 				}
 			}
