@@ -21,24 +21,24 @@ namespace SoccerData.Processors.ApiFootball.Processors
 			var rawJson = JsonUtility.GetRawJsonFromUrl(url);
 			var feed = Feeds.LeaguesFeed.FromJson(rawJson);
 
-			var orderedLeagues = feed.Result.Leagues.OrderBy(x => x.Season).ThenBy(x => x.CountryCode).ThenBy(x => x.Name).ToList();
+			var orderedApiLeagues = feed.Result.Leagues.OrderBy(x => x.Season).ThenBy(x => x.CountryCode).ThenBy(x => x.Name).ToList();
 
 			var existingCompetitions = dbContext.Competitions.ToDictionary(x => GetCompetitionKey(x), y => y);
 			var existingCompetitionSeasons = dbContext.CompetitionSeasons.ToDictionary(x => x.ApiFootballId);
 
 			var countryDict = dbContext.Countries.ToDictionary(x => x.CountryAbbr ?? "(NULL)", y => y.CountryId);
 
-			foreach (var league in orderedLeagues)
+			foreach (var apiLeague in orderedApiLeagues)
 			{
-				var key = GetCompetitionKey(league);
+				var key = GetCompetitionKey(apiLeague);
 				if (!existingCompetitions.TryGetValue(key, out Competition dbCompetition))
 				{
 					dbCompetition = new Competition
 					{
-						CompetitionName = league.Name.Trim(),
-						CompetitionType = league.Type.Trim(),
-						CountryId = countryDict[league.CountryCode ?? "(NULL)"],
-						LogoUrl = league.Logo?.ToString()
+						CompetitionName = apiLeague.Name.Trim(),
+						CompetitionType = apiLeague.Type.Trim(),
+						CountryId = countryDict[apiLeague.CountryCode ?? "(NULL)"],
+						LogoUrl = apiLeague.Logo?.ToString()
 					};
 
 					existingCompetitions.Add(key, dbCompetition);
@@ -46,28 +46,28 @@ namespace SoccerData.Processors.ApiFootball.Processors
 					dbContext.SaveChanges();
 				}
 
-				if (!existingCompetitionSeasons.ContainsKey(league.LeagueId))
+				if (!existingCompetitionSeasons.ContainsKey(apiLeague.LeagueId))
 				{
 					var dbCompetitionSeason = new CompetitionSeason
 					{
-						ApiFootballId = league.LeagueId,
+						ApiFootballId = apiLeague.LeagueId,
 						CompetitionId = dbCompetition.CompetitionId,
-						EndDate = league.SeasonEnd,
-						HasFixtureEvents = league.Coverage.Fixtures.Events,
-						HasLineups = league.Coverage.Fixtures.Lineups,
-						HasOdds = league.Coverage.Odds,
-						HasPlayers = league.Coverage.Players,
-						HasPlayerStats = league.Coverage.Fixtures.PlayersStatistics,
-						HasPredictions = league.Coverage.Predictions,
-						HasStandings = league.Standings,
-						HasTeamStats = league.Coverage.Fixtures.TeamStatistics,
-						HasTopScorers = league.Coverage.TopScorers,
-						IsCurrent = league.IsCurrent,
-						Season = league.Season,
-						StartDate = league.SeasonStart
+						EndDate = apiLeague.SeasonEnd,
+						HasFixtureEvents = apiLeague.Coverage.Fixtures.Events,
+						HasLineups = apiLeague.Coverage.Fixtures.Lineups,
+						HasOdds = apiLeague.Coverage.Odds,
+						HasPlayers = apiLeague.Coverage.Players,
+						HasPlayerStats = apiLeague.Coverage.Fixtures.PlayersStatistics,
+						HasPredictions = apiLeague.Coverage.Predictions,
+						HasStandings = apiLeague.Standings,
+						HasTeamStats = apiLeague.Coverage.Fixtures.TeamStatistics,
+						HasTopScorers = apiLeague.Coverage.TopScorers,
+						IsCurrent = apiLeague.IsCurrent,
+						Season = apiLeague.Season,
+						StartDate = apiLeague.SeasonStart
 					};
 
-					existingCompetitionSeasons.Add(league.LeagueId, dbCompetitionSeason);
+					existingCompetitionSeasons.Add(apiLeague.LeagueId, dbCompetitionSeason);
 					if (dbCompetition.CompetitionSeasons == null)
 					{
 						dbCompetition.CompetitionSeasons = new List<CompetitionSeason>();
