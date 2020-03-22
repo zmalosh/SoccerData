@@ -92,7 +92,6 @@ namespace SoccerData.Processors.ApiFootball.Processors
 			}
 			#endregion GET FORMATIONS
 
-
 			#region ENSURE COACHES EXIST
 			if (this.CheckEntitiesExist)
 			{
@@ -183,7 +182,11 @@ namespace SoccerData.Processors.ApiFootball.Processors
 			#endregion UPDATE FORAMATION AND COACH IF NECESSARY
 
 			#region FIXTURE EVENTS
-			var dbFixtureEvents = dbContext.FixtureEvents.Where(x => x.FixtureId == dbFixtureId).ToDictionary(x => GetFixtureEventKey(x));
+			// HAVE EACH dbFixtureEvent AVAILABLE. ILookup IS AN IMMUTABLE TYPE, SO A DICTIONARY WITH THE COUNT IS ALSO NEEDED TO TRACK THE NUMBER OF OCCURANCES OF EACH EVENT.
+			// THE ILookup IS JUST TO FIND FIND THE DB REFERENCE FOR EACH EVENT TO MANIPULATE
+			var dbFixtureEventLookup = dbContext.FixtureEvents.Where(x => x.FixtureId == dbFixtureId).ToLookup(x => GetFixtureEventKey(x));
+			var dbFixtureEventToDeleteCountDict = dbContext.FixtureEvents.Where(x => x.FixtureId == dbFixtureId).ToList().GroupBy(x => GetFixtureEventKey(x)).ToDictionary(x => x.Key, y => y.Count());
+
 			var apiFixtureEvents = feedFixture.Events?.Where(x => x.TeamId.HasValue).ToList();
 			if (apiFixtureEvents != null && apiFixtureEvents.Count > 0)
 			{
@@ -193,8 +196,13 @@ namespace SoccerData.Processors.ApiFootball.Processors
 					int? dbPlayerSeasonId = apiFixtureEvent.PlayerId.HasValue ? dbPlayerSeasonDict[apiFixtureEvent.PlayerId.Value] : (int?)null;
 					int? dbSecondaryPlayerSeasonId = apiFixtureEvent.SecondaryPlayerId.HasValue ? dbPlayerSeasonDict[apiFixtureEvent.SecondaryPlayerId.Value] : (int?)null;
 
+					// IT IS POSSIBLE TO HAVE MULTIPLE IDENTICAL EVENTS IN THE SAME MINUTE
+					// API FIXTURE ID 185030 - 2 GOALS BY SAME PLAYER IN SAME MINUTE
+					// USE LOOKUP TO DETERMINE CORRECT AMOUNT OF EXISTENCE
 					var eventKey = GetFixtureEventKey(apiFixtureEvent.Elapsed, apiFixtureEvent.ElapsedPlus, dbPlayerSeasonId, dbTeamSeasonId, apiFixtureEvent.EventType, apiFixtureEvent.EventDetail);
-					if (!dbFixtureEvents.TryGetValue(eventKey, out FixtureEvent dbFixtureEvent))
+					var dbCount = dbFixtureEventToDeleteCountDict.TryGetValue(eventKey, out int tempInt) ? tempInt : 0;
+					FixtureEvent dbFixtureEvent;
+					if (dbCount == 0)
 					{
 						dbFixtureEvent = new FixtureEvent
 						{
@@ -213,7 +221,16 @@ namespace SoccerData.Processors.ApiFootball.Processors
 					}
 					else
 					{
-						dbFixtureEvents.Remove(eventKey);
+						dbFixtureEvent = dbFixtureEventLookup[eventKey].Skip(dbCount - 1).First(); // TAKE LAST ENTRY IN LOOKUP. AS THE COUNT IN THE dbFixtureEventCount DICTIONARY IS DECREMENTED, THE SELECTED EVENT WILL MOVE DOWN THE LIST
+						if (dbCount == 1)
+						{
+							dbFixtureEventToDeleteCountDict.Remove(eventKey);
+						}
+						else
+						{
+							dbFixtureEventToDeleteCountDict[eventKey] = dbCount - 1;
+						}
+
 						if ((!string.IsNullOrEmpty(apiFixtureEvent.EventComments) && dbFixtureEvent.EventComment != apiFixtureEvent.EventComments)
 							|| (!string.IsNullOrEmpty(apiFixtureEvent.EventDetail) && dbFixtureEvent.EventDetail != apiFixtureEvent.EventDetail)
 							|| (dbSecondaryPlayerSeasonId.HasValue && (!dbFixtureEvent.SecondaryPlayerSeasonId.HasValue || dbFixtureEvent.SecondaryPlayerSeasonId != dbSecondaryPlayerSeasonId))
@@ -222,16 +239,24 @@ namespace SoccerData.Processors.ApiFootball.Processors
 							dbFixtureEvent.EventComment = apiFixtureEvent.EventComments;
 							dbFixtureEvent.EventDetail = apiFixtureEvent.EventDetail;
 							dbFixtureEvent.SecondaryPlayerSeasonId = dbSecondaryPlayerSeasonId;
+							hasUpdate = true;
 						}
-						hasUpdate = true;
 					}
 				}
-				if (dbFixtureEvents.Count > 0)
+				if (dbFixtureEventToDeleteCountDict.Count > 0)
 				{
-					foreach (var dbFixtureEventKVP in dbFixtureEvents)
+					foreach (var dbFixtureEventCountEntry in dbFixtureEventToDeleteCountDict)
 					{
-						var dbFixtureEvent = dbFixtureEventKVP.Value;
-						dbContext.FixtureEvents.Remove(dbFixtureEvent);
+						var dbFixtureEventLookupEntry = dbFixtureEventLookup[dbFixtureEventCountEntry.Key];
+						int dbFixtureEventCount = dbFixtureEventLookupEntry.Count();
+						if (dbFixtureEventCount >= 1)
+						{
+							for (int i = dbFixtureEventCount; i >= 1; i--)
+							{
+								var dbFixtureEvent = dbFixtureEventLookupEntry.Skip(i - 1).First();
+								dbContext.FixtureEvents.Remove(dbFixtureEvent);
+							}
+						}
 					}
 					hasUpdate = true;
 				}
