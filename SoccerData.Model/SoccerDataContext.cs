@@ -40,6 +40,7 @@ namespace SoccerData.Model
 		public DbSet<PlayerSeason> PlayerSeasons { get; set; }
 		public DbSet<Coach> Coaches { get; set; }
 		public DbSet<TeamBoxscore> TeamBoxscores { get; set; }
+		public DbSet<PlayerBoxscore> PlayerBoxscores { get; set; }
 		public DbSet<FixtureEvent> FixtureEvents { get; set; }
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -166,6 +167,44 @@ namespace SoccerData.Model
 				e.Property(tb => tb.DateCreatedUtc).HasColumnType("datetime");
 				e.Property(tb => tb.DateLastModifiedUtc).HasColumnType("datetime");
 				e.HasOne(tb => tb.Fixture).WithMany(f => f.TeamBoxscores).HasForeignKey(tb => tb.FixtureId).OnDelete(DeleteBehavior.ClientSetNull);
+			});
+
+			modelBuilder.Entity<PlayerBoxscore>(e =>
+			{
+				e.HasKey(pb => new { pb.FixtureId, pb.PlayerSeasonId });
+				e.Property(pb => pb.Position).HasMaxLength(16).IsRequired(false);
+				e.Property(pb => pb.Assists).HasColumnType("tinyint").IsRequired(false);
+				e.Property(pb => pb.Blocks).HasColumnType("tinyint").IsRequired(false);
+				e.Property(pb => pb.DribblesAttempted).HasColumnType("tinyint").IsRequired(false);
+				e.Property(pb => pb.DribblesPastDef).HasColumnType("tinyint").IsRequired(false);
+				e.Property(pb => pb.DribblesSuccessful).HasColumnType("tinyint").IsRequired(false);
+				e.Property(pb => pb.DuelsTotal).HasColumnType("tinyint").IsRequired(false);
+				e.Property(pb => pb.DuelsWon).HasColumnType("tinyint").IsRequired(false);
+				e.Property(pb => pb.FoulsCommitted).HasColumnType("tinyint").IsRequired(false);
+				e.Property(pb => pb.FoulsSuffered).HasColumnType("tinyint").IsRequired(false);
+				e.Property(pb => pb.Goals).HasColumnType("tinyint").IsRequired(false);
+				e.Property(pb => pb.GoalsConceded).HasColumnType("tinyint").IsRequired(false);
+				e.Property(pb => pb.Interceptions).HasColumnType("tinyint").IsRequired(false);
+				e.Property(pb => pb.JerseyNumber).HasColumnType("tinyint").IsRequired(false);
+				e.Property(pb => pb.KeyPasses).HasColumnType("tinyint").IsRequired(false);
+				e.Property(pb => pb.MinutesPlayed).HasColumnType("tinyint").IsRequired(false);
+				e.Property(pb => pb.PassAccuracy).HasColumnType("tinyint").IsRequired(false);
+				e.Property(pb => pb.PassAttempts).HasColumnType("tinyint").IsRequired(false);
+				e.Property(pb => pb.PenaltiesCommitted).HasColumnType("tinyint").IsRequired(false);
+				e.Property(pb => pb.PenaltiesMissed).HasColumnType("tinyint").IsRequired(false);
+				e.Property(pb => pb.PenaltiesSaved).HasColumnType("tinyint").IsRequired(false);
+				e.Property(pb => pb.PenaltiesScored).HasColumnType("tinyint").IsRequired(false);
+				e.Property(pb => pb.PenaltiesWon).HasColumnType("tinyint").IsRequired(false);
+				e.Property(pb => pb.RedCards).HasColumnType("tinyint").IsRequired(false);
+				e.Property(pb => pb.ShotsOnGoal).HasColumnType("tinyint").IsRequired(false);
+				e.Property(pb => pb.ShotsTaken).HasColumnType("tinyint").IsRequired(false);
+				e.Property(pb => pb.Tackles).HasColumnType("tinyint").IsRequired(false);
+				e.Property(pb => pb.YellowCards).HasColumnType("tinyint").IsRequired(false);
+				e.Property(pb => pb.Rating).HasColumnType("decimal(3,1)").IsRequired(false);
+				e.Property(pb => pb.DateCreatedUtc).HasColumnType("datetime");
+				e.Property(pb => pb.DateLastModifiedUtc).HasColumnType("datetime");
+				e.HasOne(pb => pb.PlayerSeason).WithMany(ps => ps.PlayerBoxscores).HasForeignKey(pb => pb.PlayerSeasonId).OnDelete(DeleteBehavior.ClientSetNull);
+				e.HasOne(pb => pb.Fixture).WithMany(ps => ps.PlayerBoxscores).HasForeignKey(pb => pb.FixtureId).OnDelete(DeleteBehavior.ClientSetNull);
 			});
 
 			modelBuilder.Entity<FixtureEvent>(e =>
