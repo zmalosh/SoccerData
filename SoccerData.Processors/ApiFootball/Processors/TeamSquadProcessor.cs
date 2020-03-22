@@ -34,12 +34,18 @@ namespace SoccerData.Processors.ApiFootball.Processors
 
 		public void Run(SoccerDataContext dbContext)
 		{
+			if (!this.DbCompetitionSeason.StartDate.HasValue || !this.DbCompetitionSeason.EndDate.HasValue)
+			{
+				// NULL DATES INDICATES NO GAMES YET.
+				return;
+			}
+
 			if (this.DbCompetitionSeason == null)
 			{
 				this.DbCompetitionSeason = dbContext.CompetitionSeasons.Single(x => x.ApiFootballId == this.ApiFootballLeagueId);
 			}
 
-			var url = Feeds.TeamSquadFeed.GetUrlFromTeamIdAndSeasonYears(this.ApiFootballTeamId, this.DbCompetitionSeason.StartDate, this.DbCompetitionSeason.EndDate);
+			var url = Feeds.TeamSquadFeed.GetUrlFromTeamIdAndSeasonYears(this.ApiFootballTeamId, this.DbCompetitionSeason.StartDate.Value, this.DbCompetitionSeason.EndDate.Value);
 			var rawJson = JsonUtility.GetRawJsonFromUrl(url);
 			var feed = Feeds.TeamSquadFeed.FromJson(rawJson);
 

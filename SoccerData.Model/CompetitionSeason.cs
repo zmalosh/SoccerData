@@ -9,8 +9,8 @@ namespace SoccerData.Model
 		public int CompetitionSeasonId { get; set; }
 		public int CompetitionId { get; set; }
 		public int Season { get; set; }
-		public DateTime StartDate { get; set; }
-		public DateTime EndDate { get; set; }
+		public DateTime? StartDate { get; set; }
+		public DateTime? EndDate { get; set; }
 		public bool IsCurrent { get; set; }
 		public bool HasFixtureEvents { get; set; }
 		public bool HasLineups { get; set; }

@@ -48,13 +48,13 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 			public int Season { get; set; }
 
 			[JsonProperty("season_start")]
-			public DateTime SeasonStart { get; set; }
+			public DateTime? SeasonStart { get; set; }
 
 			[JsonProperty("season_end")]
-			public DateTime SeasonEnd { get; set; }
+			public DateTime? SeasonEnd { get; set; }
 
 			[JsonProperty("logo")]
-			public Uri Logo { get; set; }
+			public string Logo { get; set; }
 
 			[JsonProperty("flag")]
 			public Uri Flag { get; set; }
