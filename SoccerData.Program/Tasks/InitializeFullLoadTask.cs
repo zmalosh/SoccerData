@@ -111,8 +111,7 @@ namespace SoccerData.Program.Tasks
 						context = new SoccerDataContext(config);
 
 						var competitionSeasonFixtures = context.Fixtures.Where(x => x.CompetitionSeasonId == competitionSeasonId).ToList();
-						int j = 0;
-						for (; j < competitionSeasonFixtures.Count; j++)
+						for (int j = 0; j < competitionSeasonFixtures.Count; j++)
 						{
 							Console.WriteLine($"LEAGUE {i + 1} OF {competitionSeasons.Count} - FIXTURE {j + 1} OF {competitionSeasonFixtures.Count}");
 
