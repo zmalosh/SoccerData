@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 
 using System.Globalization;
+using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -88,11 +89,20 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 			[JsonProperty("lineups")]
 			public Dictionary<string, ApiLineup> Lineups { get; set; }
 
+			[JsonIgnore]
+			public List<ApiLineupPlayer> AllLineupPlayers
+			{
+				get
+				{
+					return this.Lineups?.SelectMany(x => new[] { x.Value.Starters, x.Value.Substitutes ?? new List<ApiLineupPlayer>() }).SelectMany(x => x).ToList();
+				}
+			}
+
 			[JsonProperty("statistics")]
 			public Dictionary<string, ApiTeamStatistic> TeamStatistics { get; set; }
 
 			[JsonProperty("players")]
-			public List<Player> Players { get; set; }
+			public List<ApiPlayerBoxscore> PlayerBoxscores { get; set; }
 		}
 
 		public class ApiTeam
@@ -192,9 +202,14 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 
 			[JsonProperty("pos")]
 			public string Position { get; set; }
+
+			public override string ToString()
+			{
+				return $"API Player ID: { this.PlayerId } ({ (!string.IsNullOrEmpty(this.PlayerName) ? this.PlayerName : "(null)")})";
+			}
 		}
 
-		public class Player
+		public class ApiPlayerBoxscore
 		{
 			[JsonProperty("event_id")]
 			public int EventId { get; set; }
@@ -220,20 +235,23 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 			[JsonProperty("position")]
 			public string Position { get; set; }
 
+			[JsonIgnore]
+			public decimal? Rating { get { return decimal.TryParse(this._rating, out decimal dtp) ? dtp : (decimal?)null; } }
+
 			[JsonProperty("rating")]
-			public string Rating { get; set; }
+			private string _rating { get; set; }
 
 			[JsonProperty("minutes_played")]
 			public int MinutesPlayed { get; set; }
 
 			[JsonIgnore]
-			public bool IsCaptain { get { return this._captain.ToUpper() == "TRUE"; } }
+			public bool? IsCaptain { get { return string.IsNullOrEmpty(this._captain) ? (bool?)null : this._captain?.ToUpper() == "TRUE"; } }
 
 			[JsonProperty("captain")]
 			private string _captain { get; set; }
 
 			[JsonIgnore]
-			public bool IsSubstitute { get { return this._substitute.ToUpper() == "TRUE"; } }
+			public bool? IsSubstitute { get { return string.IsNullOrEmpty(this._substitute) ? (bool?)null : this._substitute?.ToUpper() == "TRUE"; } }
 
 			[JsonProperty("substitute")]
 			private string _substitute { get; set; }
@@ -267,6 +285,11 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 
 			[JsonProperty("penalty")]
 			public ApiStatPenalty Penalty { get; set; }
+
+			public override string ToString()
+			{
+				return $"API Player ID: { this.PlayerId } ({ (!string.IsNullOrEmpty(this.PlayerName) ? this.PlayerName : "(null)")})";
+			}
 		}
 
 		public class ApiStatCards

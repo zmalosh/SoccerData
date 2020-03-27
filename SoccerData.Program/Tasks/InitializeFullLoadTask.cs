@@ -65,17 +65,18 @@ namespace SoccerData.Program.Tasks
 													//.Where(x => x.StartDate.Date >= new DateTime(2019, 08, 01))
 													//.Where(x => (x.IsCurrent && x.EndDate.Date >= DateTime.Now.Date) || (new List<string> { "MX", "RU", "CL", "DZ", "AR", "TR", "UA", "AU", "IN", "BY", "BR", "CR", "AO", "NI", "HK", "SG" }).Contains(x.Competition.Country.CountryAbbr)) // CURRENT || (PAST FROM COUNTRIES NOT CURRENTLY CANCELLED DUE TO COVID-19)
 													//.Where(x => (new List<string> { "MX", "RU", "CL", "DZ", "AR", "TR", "UA", "AU", "IN", "BY", "BR", "CR", "AO", "NI", "HK", "SG" }).Contains(x.Competition.Country.CountryAbbr)) // (PAST FROM COUNTRIES NOT CURRENTLY CANCELLED DUE TO COVID-19)
-													//.Where(x => (new List<string> { "AU", "BY", "BR", "AO", "NI", "HK", "SG", "DK", "PL", "PY", "CN" }).Contains(x.Competition.Country.CountryAbbr)) // (PAST FROM COUNTRIES NOT CURRENTLY CANCELLED DUE TO COVID-19)
+													.Where(x =>x.Season >= 2016 && (new List<string> { "MX", "RU", "TR", "AU", "BY", "BR", "AO", "NI", "HK", "SG", "DK", "PL", "PY", "CN" }).Contains(x.Competition.Country.CountryAbbr)) // (PAST FROM COUNTRIES NOT CURRENTLY CANCELLED DUE TO COVID-19)
 													.OrderBy(x => x.CompetitionSeasonId)
 													.ToList();
 
-				int i = 46;
+				int i = 0;
 				for (; i < competitionSeasons.Count; i++)
 				{
 					Console.WriteLine($"START LEAGUE {i + 1} OF {competitionSeasons.Count}");
+
 					var competitionSeason = competitionSeasons[i];
 					int competitionSeasonId = competitionSeason.CompetitionSeasonId;
-
+					
 					// NULL StartDate AND/OR EndDate INDICATES NO GAMES AVAILABLE... NOTHING MORE TO PROCESS
 					if (competitionSeason.StartDate.HasValue && competitionSeason.EndDate.HasValue)
 					{
@@ -124,7 +125,7 @@ namespace SoccerData.Program.Tasks
 								fixtureProcessor.Run(context);
 							}
 
-							if (j % 30 == 29)
+							if (j % 15 == 14)
 							{
 								Console.WriteLine("NEW CONTEXT");
 								context.Dispose();

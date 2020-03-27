@@ -132,8 +132,7 @@ namespace SoccerData.Processors.ApiFootball.Processors
 			}
 			#endregion ENSURE COACHES EXIST 
 
-			#region ENSURE PLAYERS EXIST
-			if (this.CheckEntitiesExist)
+			#region ENSURE PLAYERS EXISTif (this.CheckEntitiesExist)
 			{
 				var missingApiPlayerIds = apiPlayerBases?.Select(x => x.PlayerId).Where(x => !dbPlayerSeasonDict.ContainsKey(x)).ToList();
 				if (missingApiPlayerIds != null && missingApiPlayerIds.Count > 0)
@@ -141,13 +140,21 @@ namespace SoccerData.Processors.ApiFootball.Processors
 					foreach (var missingApiPlayerId in missingApiPlayerIds)
 					{
 						var apiPlayerBase = apiPlayerBases.Single(x => x.PlayerId == missingApiPlayerId);
-						var dbPlayerSeason = new PlayerSeason
+
+						var dbPlayer = dbContext.Players.SingleOrDefault(x => x.ApiFootballId == missingApiPlayerId);
+						if (dbPlayer == null)
 						{
-							Player = new Player
+							dbPlayer = new Player
 							{
 								ApiFootballId = missingApiPlayerId,
+								ApiFootballName = apiPlayerBase.PlayerName,
 								PlayerName = apiPlayerBase.PlayerName
-							},
+							};
+						}
+
+						var dbPlayerSeason = new PlayerSeason
+						{
+							Player = dbPlayer,
 							CompetitionSeasonId = dbFixture.CompetitionSeasonId
 						};
 						dbContext.Add(dbPlayerSeason);
@@ -346,7 +353,7 @@ namespace SoccerData.Processors.ApiFootball.Processors
 
 		private List<ApiPlayerBase> GetApiPlayerBases(Feeds.FixtureFeed.ApiFixture feedFixture)
 		{
-			var apiPlayerBasesFromPlayers = feedFixture.Players?.Where(x => x.PlayerId.HasValue).Select(x => new ApiPlayerBase(x.PlayerId.Value, x.PlayerName)).ToList();
+			var apiPlayerBasesFromPlayers = feedFixture.PlayerBoxscores?.Where(x => x.PlayerId.HasValue).Select(x => new ApiPlayerBase(x.PlayerId.Value, x.PlayerName)).ToList();
 			var apiPlayerBasesFromEvents = feedFixture.Events?
 														.SelectMany(x => new[] { new { PlayerId = x.PlayerId, PlayerName = x.PlayerName }, new { PlayerId = x.SecondaryPlayerId, PlayerName = x.SecondaryPlayerName } })
 														.Where(x => x.PlayerId.HasValue && !string.IsNullOrEmpty(x.PlayerName))

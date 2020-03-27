@@ -8,11 +8,12 @@ namespace SoccerData.Model
 	{
 		public int FixtureId { get; set; }
 		public int PlayerSeasonId { get; set; }
-		public string Position { get; set; }
-		public int? JerseyNumber { get; set; }
+		public int TeamSeasonId { get; set; }
 		public bool? Played { get; set; }
 		public bool? IsStarter { get; set; }
-		public bool? IsSub { get; set; }
+		public bool? IsBench { get; set; }
+		public string Position { get; set; }
+		public int? JerseyNumber { get; set; }
 		public bool? IsCaptain { get; set; }
 		public int? MinutesPlayed { get; set; }
 		public decimal? Rating { get; set; }
@@ -47,5 +48,6 @@ namespace SoccerData.Model
 
 		public virtual Fixture Fixture { get; set; }
 		public virtual PlayerSeason PlayerSeason { get; set; }
+		public virtual TeamSeason TeamSeason { get; set; }
 	}
 }

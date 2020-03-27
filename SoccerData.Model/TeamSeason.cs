@@ -23,6 +23,7 @@ namespace SoccerData.Model
 		public virtual IList<Fixture> AwayFixtures { get; set; }
 		public virtual IList<TeamBoxscore> TeamBoxscores { get; set; }
 		public virtual IList<TeamBoxscore> OppTeamBoxscores { get; set; }
+		public virtual IList<PlayerBoxscore> PlayerBoxscores { get; set; }
 		public virtual IList<FixtureEvent> FixtureEvents { get; set; }
 	}
 }

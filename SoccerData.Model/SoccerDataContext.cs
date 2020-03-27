@@ -203,8 +203,9 @@ namespace SoccerData.Model
 				e.Property(pb => pb.Rating).HasColumnType("decimal(3,1)").IsRequired(false);
 				e.Property(pb => pb.DateCreatedUtc).HasColumnType("datetime");
 				e.Property(pb => pb.DateLastModifiedUtc).HasColumnType("datetime");
-				e.HasOne(pb => pb.PlayerSeason).WithMany(ps => ps.PlayerBoxscores).HasForeignKey(pb => pb.PlayerSeasonId).OnDelete(DeleteBehavior.ClientSetNull);
 				e.HasOne(pb => pb.Fixture).WithMany(ps => ps.PlayerBoxscores).HasForeignKey(pb => pb.FixtureId).OnDelete(DeleteBehavior.ClientSetNull);
+				e.HasOne(pb => pb.PlayerSeason).WithMany(ps => ps.PlayerBoxscores).HasForeignKey(pb => pb.PlayerSeasonId).OnDelete(DeleteBehavior.ClientSetNull);
+				e.HasOne(pb => pb.TeamSeason).WithMany(ps => ps.PlayerBoxscores).HasForeignKey(pb => pb.TeamSeasonId).OnDelete(DeleteBehavior.ClientSetNull);
 			});
 
 			modelBuilder.Entity<FixtureEvent>(e =>
