@@ -132,7 +132,8 @@ namespace SoccerData.Processors.ApiFootball.Processors
 			}
 			#endregion ENSURE COACHES EXIST 
 
-			#region ENSURE PLAYERS EXISTif (this.CheckEntitiesExist)
+			#region ENSURE PLAYERS EXIST
+			if (this.CheckEntitiesExist)
 			{
 				var missingApiPlayerIds = apiPlayerBases?.Select(x => x.PlayerId).Where(x => !dbPlayerSeasonDict.ContainsKey(x)).ToList();
 				if (missingApiPlayerIds != null && missingApiPlayerIds.Count > 0)
