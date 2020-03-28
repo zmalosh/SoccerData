@@ -243,7 +243,7 @@ namespace SoccerData.Model
 				e.Property(t => t.DateCreatedUtc).HasColumnType("datetime");
 				e.Property(t => t.DateLastModifiedUtc).HasColumnType("datetime");
 				e.HasOne(ps => ps.Player).WithMany(p => p.PlayerSeasons).HasForeignKey(ps => ps.PlayerId).OnDelete(DeleteBehavior.ClientSetNull);
-				e.HasOne(ps => ps.CompetitionSeason).WithMany(cs => cs.PlayerSeasons).HasForeignKey(ps => ps.PlayerId).OnDelete(DeleteBehavior.ClientSetNull);
+				e.HasOne(ps => ps.CompetitionSeason).WithMany(cs => cs.PlayerSeasons).HasForeignKey(ps => ps.CompetitionSeasonId).OnDelete(DeleteBehavior.ClientSetNull);
 				e.HasMany(ps => ps.FixtureEvents).WithOne(fe => fe.PlayerSeason).HasForeignKey(fe => fe.PlayerSeasonId).OnDelete(DeleteBehavior.ClientSetNull);
 				e.HasMany(ps => ps.SecondaryFixtureEvents).WithOne(fe => fe.SecondaryPlayerSeason).HasForeignKey(fe => fe.SecondaryPlayerSeasonId).OnDelete(DeleteBehavior.ClientSetNull);
 			});
