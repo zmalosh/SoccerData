@@ -38,7 +38,7 @@ namespace SoccerData.Processors.ApiFootball.Processors
 
 			var teamIds = feed.Result.Fixtures.SelectMany(x => new[] { x.AwayTeam.TeamId, x.HomeTeam.TeamId }).Distinct().ToList();
 			var fixtureDict = dbCompetitionSeason.Fixtures.ToDictionary(x => x.ApiFootballId);
-			var teamDict = dbContext.TeamSeasons.Include(x=>x.Team).Where(x => x.CompetitionSeasonId == this.CompetitionSeasonId && teamIds.Contains(x.Team.ApiFootballId)).ToDictionary(x => x.Team.ApiFootballId, y => y.TeamSeasonId);
+			var teamDict = dbContext.TeamSeasons.Include(x => x.Team).Where(x => x.CompetitionSeasonId == this.CompetitionSeasonId && teamIds.Contains(x.Team.ApiFootballId)).ToDictionary(x => x.Team.ApiFootballId, y => y.TeamSeasonId);
 			var venueDict = dbContext.VenueSeasons.Where(x => x.Season == dbCompetitionSeason.Season).ToList();
 			var roundDict = dbCompetitionSeason.CompetitionSeasonRounds.ToDictionary(x => x.ApiFootballKey, y => y.CompetitionSeasonRoundId);
 
@@ -224,6 +224,11 @@ namespace SoccerData.Processors.ApiFootball.Processors
 				if (feedFixture.Referee != null && dbFixture.Referee != feedFixture.Referee)
 				{
 					dbFixture.Referee = feedFixture.Referee;
+				}
+
+				if (feedFixture.Venue != null && dbFixture.VenueName != feedFixture.Venue)
+				{
+					dbFixture.VenueName = feedFixture.Venue;
 				}
 			}
 			dbContext.SaveChanges();
