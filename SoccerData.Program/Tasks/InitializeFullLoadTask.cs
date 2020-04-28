@@ -21,9 +21,9 @@ namespace SoccerData.Program.Tasks
 
 				context = new SoccerDataContext(config);
 
-				//context.Database.EnsureDeleted();
-				//context.Database.EnsureCreated();
-				//context.SaveChanges();
+				context.Database.EnsureDeleted();
+				context.Database.EnsureCreated();
+				context.SaveChanges();
 
 				var countriesProcessor = new CountriesProcessor();
 				Console.WriteLine("START COUNTRIES");
@@ -64,8 +64,8 @@ namespace SoccerData.Program.Tasks
 													//.Where(x => desiredLeagueIds == null || desiredLeagueIds.Contains(x.ApiFootballId))
 													//.Where(x => x.StartDate.Date >= new DateTime(2019, 08, 01))
 													//.Where(x => (x.IsCurrent && x.EndDate.Date >= DateTime.Now.Date) || (new List<string> { "MX", "RU", "CL", "DZ", "AR", "TR", "UA", "AU", "IN", "BY", "BR", "CR", "AO", "NI", "HK", "SG" }).Contains(x.Competition.Country.CountryAbbr)) // CURRENT || (PAST FROM COUNTRIES NOT CURRENTLY CANCELLED DUE TO COVID-19)
-													//.Where(x => (new List<string> { "MX", "RU", "CL", "DZ", "AR", "TR", "UA", "AU", "IN", "BY", "BR", "CR", "AO", "NI", "HK", "SG" }).Contains(x.Competition.Country.CountryAbbr)) // (PAST FROM COUNTRIES NOT CURRENTLY CANCELLED DUE TO COVID-19)
-													.Where(x =>x.Season >= 2016 && (new List<string> { "MX", "RU", "TR", "AU", "BY", "BR", "AO", "NI", "HK", "SG", "DK", "PL", "PY", "CN" }).Contains(x.Competition.Country.CountryAbbr)) // (PAST FROM COUNTRIES NOT CURRENTLY CANCELLED DUE TO COVID-19)
+													//.Where(x =>x.Season >= 2016 && (new List<string> { "MX", "RU", "TR", "AU", "BY", "BR", "AO", "NI", "HK", "SG", "DK", "PL", "PY", "CN" }).Contains(x.Competition.Country.CountryAbbr)) // (PAST FROM COUNTRIES NOT CURRENTLY CANCELLED DUE TO COVID-19)
+													.Where(x =>x.Season >= 2016 && (new List<string> { "BY", "NI", "ES" }).Contains(x.Competition.Country.CountryAbbr)) // (PAST FROM COUNTRIES NOT CURRENTLY CANCELLED DUE TO COVID-19)
 													.OrderBy(x => x.CompetitionSeasonId)
 													.ToList();
 

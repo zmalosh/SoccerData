@@ -21,6 +21,7 @@ namespace SoccerData.Model
 		public string HomeFormation { get; set; }
 		public string AwayFormation { get; set; }
 		public string Referee { get; set; }
+		public string VenueName { get; set; }
 		public int? VenueSeasonId { get; set; }
 		public int? HomeHalfTimeScore { get; set; }
 		public int? AwayHalfTimeScore { get; set; }

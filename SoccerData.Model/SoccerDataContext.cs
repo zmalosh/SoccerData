@@ -146,6 +146,8 @@ namespace SoccerData.Model
 				e.Property(f => f.StatusShort).HasMaxLength(8);
 				e.Property(f => f.HomeFormation).HasMaxLength(16);
 				e.Property(f => f.AwayFormation).HasMaxLength(16);
+				e.Property(f => f.Referee).HasMaxLength(128);
+				e.Property(f => f.VenueName).HasMaxLength(128);
 				e.HasOne(f => f.CompetitionSeason).WithMany(cs => cs.Fixtures).HasForeignKey(f => f.CompetitionSeasonId).OnDelete(DeleteBehavior.ClientSetNull);
 				e.HasOne(f => f.CompetitionSeasonRound).WithMany(csr => csr.Fixtures).HasForeignKey(f => f.CompetitionSeasonRoundId).OnDelete(DeleteBehavior.ClientSetNull);
 				e.HasOne(f => f.VenueSeason).WithMany(vs => vs.Fixtures).HasForeignKey(f => f.VenueSeasonId).OnDelete(DeleteBehavior.ClientSetNull);
