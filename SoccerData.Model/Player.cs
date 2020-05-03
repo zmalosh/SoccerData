@@ -20,5 +20,6 @@ namespace SoccerData.Model
 		public DateTime DateCreatedUtc { get; set; }
 
 		public virtual IList<PlayerSeason> PlayerSeasons { get; set; }
+		public virtual IList<Transfer> Transfers { get; set; }
 	}
 }

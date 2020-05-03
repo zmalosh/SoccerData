@@ -42,6 +42,7 @@ namespace SoccerData.Model
 		public DbSet<TeamBoxscore> TeamBoxscores { get; set; }
 		public DbSet<PlayerBoxscore> PlayerBoxscores { get; set; }
 		public DbSet<FixtureEvent> FixtureEvents { get; set; }
+		public DbSet<Transfer> Transfers { get; set; }
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
@@ -117,6 +118,8 @@ namespace SoccerData.Model
 				e.Property(t => t.DateCreatedUtc).HasColumnType("datetime");
 				e.Property(t => t.DateLastModifiedUtc).HasColumnType("datetime");
 				e.HasOne(t => t.Country).WithMany(c => c.Teams).HasForeignKey(t => t.CountryId).OnDelete(DeleteBehavior.ClientSetNull);
+				e.HasMany(t => t.DestTransfers).WithOne(t => t.DestTeam).HasForeignKey(t => t.DestTeamId).OnDelete(DeleteBehavior.ClientSetNull);
+				e.HasMany(t => t.SourceTransfers).WithOne(t => t.SourceTeam).HasForeignKey(t => t.SourceTeamId).OnDelete(DeleteBehavior.ClientSetNull);
 			});
 
 			modelBuilder.Entity<Player>(e =>
@@ -242,12 +245,22 @@ namespace SoccerData.Model
 			{
 				e.HasKey(ps => ps.PlayerSeasonId);
 				e.Property(ps => ps.Position).HasMaxLength(16).IsRequired(false);
-				e.Property(t => t.DateCreatedUtc).HasColumnType("datetime");
-				e.Property(t => t.DateLastModifiedUtc).HasColumnType("datetime");
+				e.Property(ps => ps.DateCreatedUtc).HasColumnType("datetime");
+				e.Property(ps => ps.DateLastModifiedUtc).HasColumnType("datetime");
 				e.HasOne(ps => ps.Player).WithMany(p => p.PlayerSeasons).HasForeignKey(ps => ps.PlayerId).OnDelete(DeleteBehavior.ClientSetNull);
 				e.HasOne(ps => ps.CompetitionSeason).WithMany(cs => cs.PlayerSeasons).HasForeignKey(ps => ps.CompetitionSeasonId).OnDelete(DeleteBehavior.ClientSetNull);
 				e.HasMany(ps => ps.FixtureEvents).WithOne(fe => fe.PlayerSeason).HasForeignKey(fe => fe.PlayerSeasonId).OnDelete(DeleteBehavior.ClientSetNull);
 				e.HasMany(ps => ps.SecondaryFixtureEvents).WithOne(fe => fe.SecondaryPlayerSeason).HasForeignKey(fe => fe.SecondaryPlayerSeasonId).OnDelete(DeleteBehavior.ClientSetNull);
+			});
+
+			modelBuilder.Entity<Transfer>(e =>
+			{
+				e.HasKey(t => t.TransferId);
+				e.Property(t => t.TransferType).HasMaxLength(16).IsRequired(true);
+				e.Property(t => t.TransferDate).HasColumnType("date");
+				e.Property(t => t.DateCreatedUtc).HasColumnType("datetime");
+				e.Property(t => t.DateLastModifiedUtc).HasColumnType("datetime");
+				e.HasOne(t => t.Player).WithMany(p => p.Transfers).HasForeignKey(t => t.PlayerId);
 			});
 		}
 
