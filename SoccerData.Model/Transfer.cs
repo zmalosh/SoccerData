@@ -10,7 +10,7 @@ namespace SoccerData.Model
 		public int PlayerId { get; set; }
 		public int? SourceTeamId { get; set; }
 		public int? DestTeamId { get; set; }
-		public DateTime TransferDate { get; set; }
+		public DateTime? TransferDate { get; set; }
 		public string TransferType { get; set; }
 		public DateTime DateLastModifiedUtc { get; set; }
 		public DateTime DateCreatedUtc { get; set; }

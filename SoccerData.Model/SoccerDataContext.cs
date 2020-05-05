@@ -256,7 +256,7 @@ namespace SoccerData.Model
 			modelBuilder.Entity<Transfer>(e =>
 			{
 				e.HasKey(t => t.TransferId);
-				e.Property(t => t.TransferType).HasMaxLength(16).IsRequired(true);
+				e.Property(t => t.TransferType).HasMaxLength(16).IsRequired(false);
 				e.Property(t => t.TransferDate).HasColumnType("date");
 				e.Property(t => t.DateCreatedUtc).HasColumnType("datetime");
 				e.Property(t => t.DateLastModifiedUtc).HasColumnType("datetime");

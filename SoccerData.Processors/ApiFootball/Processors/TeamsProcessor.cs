@@ -38,7 +38,7 @@ namespace SoccerData.Processors.ApiFootball.Processors
 			var venueDict = dbContext.Venues.Include(x => x.VenueSeasons)
 											.ToDictionary(x => GetVenueKey(x.VenueName, x.VenueAddress));
 
-			var worldCountryId = dbContext.Countries.Single(x => x.CountryName.ToUpper() == WorldCountryName).CountryId;
+			var worldCountryId = dbContext.Countries.Single(x => x.ApiFootballCountryName.ToUpper() == WorldCountryName).CountryId;
 
 			int competitionSeasonId = dbCompetitionSeason.CompetitionSeasonId;
 			int competitionCountryId = dbCompetitionSeason.Competition?.CountryId ?? worldCountryId;
@@ -93,12 +93,23 @@ namespace SoccerData.Processors.ApiFootball.Processors
 				}
 				#endregion VENUE SETTING
 
+				Country dbCountry = dbContext.Countries.SingleOrDefault(x => x.ApiFootballCountryName == feedTeam.Country.Replace(' ', '-').ToUpper());
+				if (dbCountry == null)
+				{
+					dbCountry = new Country
+					{
+						ApiFootballCountryName = feedTeam.Country.Replace(' ', '-'),
+						CountryAbbr = feedTeam.Code,
+						CountryName = feedTeam.Country
+					};
+				}
+
 				if (!teamDict.TryGetValue(feedTeam.TeamId, out Team dbTeam))
 				{
 					dbTeam = new Team
 					{
 						ApiFootballId = feedTeam.TeamId,
-						CountryId = competitionCountryId,
+						Country = dbCountry,
 						LogoUrl = feedTeam.Logo.ToString(),
 						TeamName = feedTeam.Name,
 						YearFounded = feedTeam.Founded,
@@ -107,11 +118,6 @@ namespace SoccerData.Processors.ApiFootball.Processors
 					hasUpdates = true;
 					teamDict.Add(feedTeam.TeamId, dbTeam);
 					dbContext.Teams.Add(dbTeam);
-				}
-
-				if (dbTeam.CountryId == worldCountryId && competitionCountryId != worldCountryId && dbTeam.CountryId != competitionCountryId)
-				{
-					dbTeam.CountryId = competitionCountryId;
 				}
 
 				if (dbTeam.TeamSeasons == null)

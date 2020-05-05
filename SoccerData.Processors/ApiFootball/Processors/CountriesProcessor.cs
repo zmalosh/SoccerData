@@ -26,10 +26,10 @@ namespace SoccerData.Processors.ApiFootball.Processors
 												.ThenBy(x => x.Code)
 												.ToList();
 
-			var existingCountries = dbContext.Countries.ToDictionary(x => x.CountryAbbr ?? "(null)");
+			var existingCountries = dbContext.Countries.ToDictionary(x => x.ApiFootballCountryName);
 			foreach (var country in orderedCountries)
 			{
-				if (!existingCountries.ContainsKey(country.Code ?? "(null)"))
+				if (!existingCountries.ContainsKey(country.CountryName))
 				{
 					var dbCountry = new Country
 					{
@@ -38,10 +38,28 @@ namespace SoccerData.Processors.ApiFootball.Processors
 						FlagUrl = country.Flag?.ToString(),
 						ApiFootballCountryName = country.CountryName
 					};
-					existingCountries.Add(country.Code ?? "(null)", dbCountry);
+					existingCountries.Add(country.CountryName, dbCountry);
 					dbContext.Countries.Add(dbCountry);
 					dbContext.SaveChanges();
 				}
+			}
+
+			if (dbContext.Countries.Count(x => string.Equals(x.ApiFootballCountryName.ToUpper(), "SCOTLAND")) == 0)
+			{
+				dbContext.Add(new Country { ApiFootballCountryName = "Scotland", CountryAbbr = "GB", CountryName = "Scotland" });
+				dbContext.SaveChanges();
+			}
+
+			if (dbContext.Countries.Count(x => string.Equals(x.ApiFootballCountryName.ToUpper(), "NORTHERN-IRELAND")) == 0)
+			{
+				dbContext.Add(new Country { ApiFootballCountryName = "Northern-Ireland", CountryAbbr = "GB", CountryName = "Northern Ireland" });
+				dbContext.SaveChanges();
+			}
+
+			if (dbContext.Countries.Count(x => string.Equals(x.ApiFootballCountryName.ToUpper(), "SWAZILAND")) == 0)
+			{
+				dbContext.Add(new Country { ApiFootballCountryName = "Swaziland", CountryAbbr = "SW", CountryName = "Eswatini" });
+				dbContext.SaveChanges();
 			}
 		}
 	}

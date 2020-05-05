@@ -49,7 +49,7 @@ namespace SoccerData.Processors.ApiFootball.Processors
 			var rawJson = JsonUtility.GetRawJsonFromUrl(url);
 			var feed = Feeds.TeamSquadFeed.FromJson(rawJson);
 
-			if (feed.Result.Count == 0) { return; }
+			if (feed == null || feed.Result.Count == 0) { return; }
 
 			int dbCompetitionSeasonId = this.DbCompetitionSeason.CompetitionSeasonId;
 			var apiPlayerIds = feed.Result.Players.Select(x => x.PlayerId).ToList();

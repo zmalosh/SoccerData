@@ -111,7 +111,7 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 			private string _weight { get; set; }
 		}
 
-		public static TeamSquadFeed FromJson(string json) => JsonConvert.DeserializeObject<TeamSquadFeed>(json, Converter.Settings);
+		public static TeamSquadFeed FromJson(string json) => json == null ? null : JsonConvert.DeserializeObject<TeamSquadFeed>(json, Converter.Settings);
 	}
 
 	public static partial class Serialize
