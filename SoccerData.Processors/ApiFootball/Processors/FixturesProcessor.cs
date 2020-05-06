@@ -7,12 +7,12 @@ using SoccerData.Model;
 
 namespace SoccerData.Processors.ApiFootball.Processors
 {
-	public class LeagueFixturesProcessor : IProcessor
+	public class FixturesProcessor : IProcessor
 	{
 		private int CompetitionSeasonId;
 		private readonly JsonUtility JsonUtility;
 
-		public LeagueFixturesProcessor(int competitionSeasonId)
+		public FixturesProcessor(int competitionSeasonId)
 		{
 			this.CompetitionSeasonId = competitionSeasonId;
 			this.JsonUtility = new JsonUtility(24 * 60 * 60, sourceType: JsonUtility.JsonSourceType.ApiFootball);

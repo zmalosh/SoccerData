@@ -81,7 +81,7 @@ namespace SoccerData.Model.Initializer
 
 				context.SaveChanges();
 
-				var leagueFixturesProcessor = new LeagueFixturesProcessor(competitionSeasonId);
+				var leagueFixturesProcessor = new FixturesProcessor(competitionSeasonId);
 				leagueFixturesProcessor.Run(context);
 
 				context.SaveChanges();
