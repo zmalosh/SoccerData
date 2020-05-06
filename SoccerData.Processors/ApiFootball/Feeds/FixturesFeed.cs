@@ -5,14 +5,14 @@ using System.Text;
 
 namespace SoccerData.Processors.ApiFootball.Feeds
 {
-	public class LeagueFixturesFeed
+	public class FixturesFeed
 	{
 		public static string GetFeedUrlByLeagueId(int apiFootballLeagueId)
 		{
 			return $"https://api-football-v1.p.rapidapi.com/v2/fixtures/league/{apiFootballLeagueId}";
 		}
 
-		public static LeagueFixturesFeed FromJson(string json) => JsonConvert.DeserializeObject<LeagueFixturesFeed>(json, Converter.Settings);
+		public static FixturesFeed FromJson(string json) => JsonConvert.DeserializeObject<FixturesFeed>(json, Converter.Settings);
 
 		[JsonProperty("api")]
 		public ApiResult Result { get; set; }
@@ -158,6 +158,6 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 
 	public static partial class Serialize
 	{
-		public static string ToJson(this LeagueFixturesFeed self) => JsonConvert.SerializeObject(self, Converter.Settings);
+		public static string ToJson(this FixturesFeed self) => JsonConvert.SerializeObject(self, Converter.Settings);
 	}
 }

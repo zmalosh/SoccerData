@@ -32,9 +32,9 @@ namespace SoccerData.Processors.ApiFootball.Processors
 
 			Console.WriteLine($"LFx-{dbCompetitionSeason.CompetitionSeasonId}-{dbCompetitionSeason.Season}-{dbCompetitionSeason.Competition.CompetitionName}");
 
-			var url = Feeds.LeagueFixturesFeed.GetFeedUrlByLeagueId(dbCompetitionSeason.ApiFootballId);
+			var url = Feeds.FixturesFeed.GetFeedUrlByLeagueId(dbCompetitionSeason.ApiFootballId);
 			var rawJson = JsonUtility.GetRawJsonFromUrl(url);
-			var feed = Feeds.LeagueFixturesFeed.FromJson(rawJson);
+			var feed = Feeds.FixturesFeed.FromJson(rawJson);
 
 			var teamIds = feed.Result.Fixtures.SelectMany(x => new[] { x.AwayTeam.TeamId, x.HomeTeam.TeamId }).Distinct().ToList();
 			var fixtureDict = dbCompetitionSeason.Fixtures.ToDictionary(x => x.ApiFootballId);
