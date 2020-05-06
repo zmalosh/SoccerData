@@ -12,6 +12,11 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 			return $"https://api-football-v1.p.rapidapi.com/v2/fixtures/league/{apiFootballLeagueId}";
 		}
 
+		public static string GetFeedUrlByTeamId(int apiFootballTeamId)
+		{
+			return $"https://api-football-v1.p.rapidapi.com/v2/fixtures/team/{apiFootballTeamId}";
+		}
+
 		public static FixturesFeed FromJson(string json) => JsonConvert.DeserializeObject<FixturesFeed>(json, Converter.Settings);
 
 		[JsonProperty("api")]
