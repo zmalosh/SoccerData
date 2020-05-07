@@ -10,6 +10,7 @@ namespace SoccerData.Model
 		public int CountryId { get; set; }
 		public string CompetitionName { get; set; }
 		public string CompetitionType { get; set; }
+		public int? CurrentTier { get; set; }
 		public string LogoUrl { get; set; }
 		public DateTime DateLastModifiedUtc { get; set; }
 		public DateTime DateCreatedUtc { get; set; }
