@@ -93,7 +93,7 @@ namespace SoccerData.Processors.ApiFootball.Processors
 				}
 				#endregion VENUE SETTING
 
-				Country dbCountry = dbContext.Countries.SingleOrDefault(x => x.ApiFootballCountryName == feedTeam.Country.Replace(' ', '-').ToUpper());
+				Country dbCountry = dbContext.Countries.SingleOrDefault(x => x.ApiFootballCountryName == (feedTeam.Country ?? "World").Replace(' ', '-').ToUpper());
 				if (dbCountry == null)
 				{
 					dbCountry = new Country

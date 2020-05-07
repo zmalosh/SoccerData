@@ -79,8 +79,9 @@ namespace SoccerData.Processors.ApiFootball.Processors
 			}
 			#endregion ADD MISSING TEAMS INDIVIDUALLY 
 
-			foreach (var feedFixture in feedFixtures)
+			for (int i = 0; i < feedFixtures.Count; i++)
 			{
+				var feedFixture = feedFixtures[i];
 				if (!fixtureDict.TryGetValue(feedFixture.FixtureId, out Fixture dbFixture))
 				{
 					// ASSUME ROUNDS ARE POPULATED FROM CompetitionSeasonRoundsFeed
