@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 using SoccerData.Model;
 
 namespace SoccerData.Processors.ApiFootball.Processors
@@ -23,7 +24,7 @@ namespace SoccerData.Processors.ApiFootball.Processors
 
 			var orderedApiLeagues = feed.Result.Leagues.OrderBy(x => x.Season).ThenBy(x => x.CountryCode).ThenBy(x => x.Name).ToList();
 
-			var existingCompetitions = dbContext.Competitions.ToDictionary(x => GetCompetitionKey(x), y => y);
+			var existingCompetitions = dbContext.Competitions.Include(x => x.Country).ToDictionary(x => GetCompetitionKey(x), y => y);
 			var existingCompetitionSeasons = dbContext.CompetitionSeasons.ToDictionary(x => x.ApiFootballId);
 
 			var countryDict = dbContext.Countries.ToDictionary(x => x.ApiFootballCountryName, y => y.CountryId);
