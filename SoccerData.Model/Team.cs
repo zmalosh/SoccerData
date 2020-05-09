@@ -9,6 +9,7 @@ namespace SoccerData.Model
 		public int TeamId { get; set; }
 		public string TeamName { get; set; }
 		public int CountryId { get; set; }
+		public string CountryName { get; set; }
 		public int? YearFounded { get; set; }
 		public string LogoUrl { get; set; }
 		public int ApiFootballId { get; set; }

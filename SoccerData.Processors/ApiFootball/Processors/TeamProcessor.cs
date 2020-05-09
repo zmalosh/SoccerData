@@ -27,24 +27,13 @@ namespace SoccerData.Processors.ApiFootball.Processors
 
 			var feedTeam = feed.Result.Teams.Single();
 
-			var dbCountry = dbContext.Countries.SingleOrDefault(x => x.ApiFootballCountryName == (feedTeam.Country ?? "World").Replace(' ', '-'));
-			if (dbCountry == null)
-			{
-				dbCountry = new Country
-				{
-					ApiFootballCountryName = feedTeam.Country.Replace(' ', '-'),
-					CountryName = feedTeam.Country,
-					CountryAbbr = feedTeam.Code
-				};
-			}
-
 			var dbTeam = dbContext.Teams.SingleOrDefault(x => x.ApiFootballId == this.ApiFootballTeamId);
 			if (dbTeam == null)
 			{
 				dbTeam = new Team
 				{
 					ApiFootballId = this.ApiFootballTeamId,
-					Country = dbCountry,
+					CountryName = feedTeam.Country,
 					LogoUrl = feedTeam.Logo,
 					TeamName = feedTeam.Name,
 					YearFounded = feedTeam.Founded

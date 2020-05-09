@@ -115,9 +115,9 @@ namespace SoccerData.Model
 				e.HasKey(t => t.TeamId);
 				e.Property(t => t.TeamName).HasMaxLength(64);
 				e.Property(t => t.LogoUrl).HasMaxLength(256);
+				e.Property(t => t.CountryName).HasMaxLength(128);
 				e.Property(t => t.DateCreatedUtc).HasColumnType("datetime");
 				e.Property(t => t.DateLastModifiedUtc).HasColumnType("datetime");
-				e.HasOne(t => t.Country).WithMany(c => c.Teams).HasForeignKey(t => t.CountryId).OnDelete(DeleteBehavior.ClientSetNull);
 				e.HasMany(t => t.DestTransfers).WithOne(t => t.DestTeam).HasForeignKey(t => t.DestTeamId).OnDelete(DeleteBehavior.ClientSetNull);
 				e.HasMany(t => t.SourceTransfers).WithOne(t => t.SourceTeam).HasForeignKey(t => t.SourceTeamId).OnDelete(DeleteBehavior.ClientSetNull);
 			});
