@@ -22,16 +22,16 @@ namespace SoccerData.Program.Tasks
 
 				context = new SoccerDataContext(config);
 
-				//context.Database.EnsureDeleted();
-				//context.Database.EnsureCreated();
-				//context.SaveChanges();
+				context.Database.EnsureDeleted();
+				context.Database.EnsureCreated();
+				context.SaveChanges();
 
-				//var countriesProcessor = new CountriesProcessor();
-				//Console.WriteLine("START COUNTRIES");
-				//countriesProcessor.Run(context);
-				//Console.WriteLine("SAVE COUNTRIES");
-				//context.SaveChanges();
-				//Console.WriteLine("END COUNTRIES");
+				var countriesProcessor = new CountriesProcessor();
+				Console.WriteLine("START COUNTRIES");
+				countriesProcessor.Run(context);
+				Console.WriteLine("SAVE COUNTRIES");
+				context.SaveChanges();
+				Console.WriteLine("END COUNTRIES");
 
 				var leaguesProcessor = new LeaguesProcessor();
 				Console.WriteLine("START LEAGUES");
@@ -40,19 +40,19 @@ namespace SoccerData.Program.Tasks
 				context.SaveChanges();
 				Console.WriteLine("END LEAGUES");
 
-				//List<int> desiredLeagueIds = null;
-				//desiredLeagueIds = new List<int>
-				//{
-				//	751, 752, 51, 403,							// EURO CHAMPS
-				//	1, 749, 750,								// WORLD CUP
-				//	52, 31, 132, 530, 53, 32, 137, 514,			// UEFA CL/EL
-				//	735, 734, 733, 732, 731, 730, 64, 30, 87,	// ESP - LA LIGA
-				//	65, 33, 88, 776,							// ESP - SEGUNDA
-				//	808, 973,									// ESP - COPA DEL REY
-				//	499, 498, 444, 968, 502, 501, 445, 966,		// AND - 1st AND 2nd
-				//	201, 200, 199, 294,							// USA - MLS
-				//	521, 520, 519, 518, 522, 523				// USA - USL
-				//};
+				List<int> desiredLeagueIds = null;
+				desiredLeagueIds = new List<int>
+				{
+					751, 752, 51, 403,							// EURO CHAMPS
+					1, 749, 750,								// WORLD CUP
+					52, 31, 132, 530, 53, 32, 137, 514,			// UEFA CL/EL
+					735, 734, 733, 732, 731, 730, 64, 30, 87,	// ESP - LA LIGA
+					65, 33, 88, 776,							// ESP - SEGUNDA
+					808, 973,									// ESP - COPA DEL REY
+					499, 498, 444, 968, 502, 501, 445, 966,		// AND - 1st AND 2nd
+					201, 200, 199, 294,							// USA - MLS
+					521, 520, 519, 518, 522, 523				// USA - USL
+				};
 				//desiredLeagueIds = new List<int>
 				//{
 				//	1, 749, 750,								// WORLD CUP
@@ -60,10 +60,11 @@ namespace SoccerData.Program.Tasks
 				//	808, 973,									// ESP - COPA DEL REY
 				//	200, 199, 294,								// USA - MLS
 				//};
+				desiredLeagueIds = new List<int> { 357, 82, 775 }; // 2019 BRAZIL SERIE A, 2018 CHINA SUPER LEAGUE, 2019-2020 ESP LALIGA
 
 				var competitionSeasons = context.CompetitionSeasons
 													.Include(x => x.Competition)
-													//.Where(x => desiredLeagueIds == null || desiredLeagueIds.Contains(x.ApiFootballId))
+													.Where(x => desiredLeagueIds == null || desiredLeagueIds.Contains(x.ApiFootballId))
 													//.Where(x => x.StartDate.Date >= new DateTime(2019, 08, 01))
 													//.Where(x => (x.IsCurrent && x.EndDate.Date >= DateTime.Now.Date) || (new List<string> { "MX", "RU", "CL", "DZ", "AR", "TR", "UA", "AU", "IN", "BY", "BR", "CR", "AO", "NI", "HK", "SG" }).Contains(x.Competition.Country.CountryAbbr)) // CURRENT || (PAST FROM COUNTRIES NOT CURRENTLY CANCELLED DUE TO COVID-19)
 													//.Where(x =>x.Season >= 2016 && (new List<string> { "MX", "RU", "TR", "AU", "BY", "BR", "AO", "NI", "HK", "SG", "DK", "PL", "PY", "CN" }).Contains(x.Competition.Country.CountryAbbr)) // (PAST FROM COUNTRIES NOT CURRENTLY CANCELLED DUE TO COVID-19)
@@ -72,7 +73,7 @@ namespace SoccerData.Program.Tasks
 													.OrderBy(x => x.CompetitionSeasonId)
 													.ToList();
 
-				int i = 1340;
+				int i = 0;
 				List<Team> dbTeams;
 				for (; i < competitionSeasons.Count; i++)
 				{
@@ -96,46 +97,46 @@ namespace SoccerData.Program.Tasks
 						context.Dispose();
 						context = new SoccerDataContext(config);
 
-						//dbTeams = context.Teams.Where(x => x.TeamSeasons.Any(y => y.CompetitionSeasonId == competitionSeasonId)).ToList();
-						//for (int j = 0; j < dbTeams.Count; j++)
-						//{
-						//	Console.WriteLine($"LEAGUE {i + 1} OF {competitionSeasons.Count} - TEAM {j + 1} OF {dbTeams.Count}");
-						//	var dbTeam = dbTeams[j];
-						//	var teamSquadProcessor = new TeamSquadProcessor(dbTeam.ApiFootballId, competitionSeason);
-						//	teamSquadProcessor.Run(context);
+						dbTeams = context.Teams.Where(x => x.TeamSeasons.Any(y => y.CompetitionSeasonId == competitionSeasonId)).ToList();
+						for (int j = 0; j < dbTeams.Count; j++)
+						{
+							Console.WriteLine($"LEAGUE {i + 1} OF {competitionSeasons.Count} - TEAM {j + 1} OF {dbTeams.Count}");
+							var dbTeam = dbTeams[j];
+							var teamSquadProcessor = new TeamSquadProcessor(dbTeam.ApiFootballId, competitionSeason);
+							teamSquadProcessor.Run(context);
 
-						//	if (j % 5 == 4)
-						//	{
-						//		Console.WriteLine("NEW CONTEXT");
-						//		context.Dispose();
-						//		context = new SoccerDataContext(config);
-						//	}
-						//}
+							if (j % 5 == 4)
+							{
+								Console.WriteLine("NEW CONTEXT");
+								context.Dispose();
+								context = new SoccerDataContext(config);
+							}
+						}
 
-						//context.Dispose();
-						//context = new SoccerDataContext(config);
+						context.Dispose();
+						context = new SoccerDataContext(config);
 
-						//var competitionSeasonFixtures = context.Fixtures.Where(x => x.CompetitionSeasonId == competitionSeasonId).ToList();
-						//for (int j = 0; j < competitionSeasonFixtures.Count; j++)
-						//{
-						//	Console.WriteLine($"LEAGUE {i + 1} OF {competitionSeasons.Count} - FIXTURE {j + 1} OF {competitionSeasonFixtures.Count}");
+						var competitionSeasonFixtures = context.Fixtures.Where(x => x.CompetitionSeasonId == competitionSeasonId).ToList();
+						for (int j = 0; j < competitionSeasonFixtures.Count; j++)
+						{
+							Console.WriteLine($"LEAGUE {i + 1} OF {competitionSeasons.Count} - FIXTURE {j + 1} OF {competitionSeasonFixtures.Count}");
 
-						//	var dbFixture = competitionSeasonFixtures[j];
+							var dbFixture = competitionSeasonFixtures[j];
 
-						//	if (string.Equals("Match Finished", dbFixture.Status, StringComparison.CurrentCultureIgnoreCase))
-						//	{
-						//		// TODO: PROCESS FIXTURE DATA (INCLUDE SETTING HasTeamBoxscores VALUE ON FIXTURE)
-						//		var fixtureProcessor = new FixtureProcessor(dbFixture.ApiFootballId);
-						//		fixtureProcessor.Run(context);
-						//	}
+							if (string.Equals("Match Finished", dbFixture.Status, StringComparison.CurrentCultureIgnoreCase))
+							{
+								// TODO: PROCESS FIXTURE DATA (INCLUDE SETTING HasTeamBoxscores VALUE ON FIXTURE)
+								var fixtureProcessor = new FixtureProcessor(dbFixture.ApiFootballId);
+								fixtureProcessor.Run(context);
+							}
 
-						//	if (j % 15 == 14)
-						//	{
-						//		Console.WriteLine("NEW CONTEXT");
-						//		context.Dispose();
-						//		context = new SoccerDataContext(config);
-						//	}
-						//}
+							if (j % 5 == 4)
+							{
+								Console.WriteLine("NEW CONTEXT");
+								context.Dispose();
+								context = new SoccerDataContext(config);
+							}
+						}
 
 						context.SaveChanges();
 					}

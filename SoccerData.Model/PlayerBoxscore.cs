@@ -25,6 +25,7 @@ namespace SoccerData.Model
 		public int? FoulsSuffered { get; set; }
 		public int? ShotsTaken { get; set; }
 		public int? ShotsOnGoal { get; set; }
+		public int? Offsides { get; set; }
 		public int? PassAttempts { get; set; }
 		public int? PassAccuracy { get; set; }
 		public int? DribblesAttempted { get; set; }

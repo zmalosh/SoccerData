@@ -90,11 +90,16 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 			public Dictionary<string, ApiLineup> Lineups { get; set; }
 
 			[JsonIgnore]
-			public List<ApiLineupPlayer> AllLineupPlayers
+			public List<ApiLineupPlayerWithStarterStatus> AllLineupPlayers
 			{
 				get
 				{
-					return this.Lineups?.SelectMany(x => new[] { x.Value.Starters, x.Value.Substitutes ?? new List<ApiLineupPlayer>() }).SelectMany(x => x).ToList();
+					var starters = this.Lineups?.SelectMany(x => x.Value.Starters).Select(x => new ApiLineupPlayerWithStarterStatus(x, true)).ToList();
+					var subs = this.Lineups?.SelectMany(x => x.Value.Substitutes).Select(x => new ApiLineupPlayerWithStarterStatus(x, false)).ToList();
+					var result = new List<ApiLineupPlayerWithStarterStatus>();
+					result.AddRange(starters);
+					result.AddRange(subs);
+					return result;
 				}
 			}
 
@@ -202,6 +207,31 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 
 			[JsonProperty("pos")]
 			public string Position { get; set; }
+
+			public override string ToString()
+			{
+				return $"API Player ID: { this.PlayerId } ({ (!string.IsNullOrEmpty(this.PlayerName) ? this.PlayerName : "(null)")})";
+			}
+		}
+
+		public class ApiLineupPlayerWithStarterStatus
+		{
+			public int TeamId { get; set; }
+			public int? PlayerId { get; set; }
+			public string PlayerName { get; set; }
+			public int? Number { get; set; }
+			public string Position { get; set; }
+			public bool IsStarter { get; set; }
+
+			public ApiLineupPlayerWithStarterStatus(ApiLineupPlayer player, bool isStarter)
+			{
+				this.TeamId = player.TeamId;
+				this.PlayerId = player.PlayerId;
+				this.PlayerName = player.PlayerName;
+				this.Number = player.Number;
+				this.Position = player.Position;
+				this.IsStarter = isStarter;
+			}
 
 			public override string ToString()
 			{

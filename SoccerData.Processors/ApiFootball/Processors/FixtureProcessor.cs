@@ -5,6 +5,7 @@ using System.Text;
 using SoccerData.Model;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 
 namespace SoccerData.Processors.ApiFootball.Processors
 {
@@ -13,6 +14,8 @@ namespace SoccerData.Processors.ApiFootball.Processors
 		private readonly int ApiFootballFixtureId;
 		private readonly JsonUtility JsonUtility;
 		private readonly bool CheckEntitiesExist;
+
+		private const int CompareResult_Equals = 0;
 
 		private const int NullIntDictKey = int.MinValue;
 
@@ -201,8 +204,16 @@ namespace SoccerData.Processors.ApiFootball.Processors
 				foreach (var apiFixtureEvent in apiFixtureEvents)
 				{
 					int dbTeamSeasonId = apiFixtureEvent.TeamId == apiAwayTeamId ? dbAwayTeamSeasonId : dbHomeTeamSeasonId;
-					int? dbPlayerSeasonId = apiFixtureEvent.PlayerId.HasValue ? dbPlayerSeasonDict[apiFixtureEvent.PlayerId.Value] : (int?)null;
-					int? dbSecondaryPlayerSeasonId = apiFixtureEvent.SecondaryPlayerId.HasValue ? dbPlayerSeasonDict[apiFixtureEvent.SecondaryPlayerId.Value] : (int?)null;
+					int? dbPlayerSeasonId = null;
+					if (dbPlayerSeasonDict != null && apiFixtureEvent.PlayerId.HasValue && dbPlayerSeasonDict.TryGetValue(apiFixtureEvent.PlayerId.Value, out int intPlayerSeasonId))
+					{
+						dbPlayerSeasonId = intPlayerSeasonId;
+					}
+					int? dbSecondaryPlayerSeasonId = null;
+					if (dbPlayerSeasonDict != null && apiFixtureEvent.SecondaryPlayerId.HasValue && dbPlayerSeasonDict.TryGetValue(apiFixtureEvent.SecondaryPlayerId.Value, out intPlayerSeasonId))
+					{
+						dbSecondaryPlayerSeasonId = intPlayerSeasonId;
+					}
 
 					// IT IS POSSIBLE TO HAVE MULTIPLE IDENTICAL EVENTS IN THE SAME MINUTE
 					// API FIXTURE ID 185030 - 2 GOALS BY SAME PLAYER IN SAME MINUTE
@@ -332,10 +343,72 @@ namespace SoccerData.Processors.ApiFootball.Processors
 			}
 			#endregion TEAM BOXSCORE
 
+			#region PLAYER BOXSCORE
+			var dbPlayerBoxscores = dbContext.PlayerBoxscores.Where(x => x.FixtureId == dbFixtureId).ToDictionary(x => x.PlayerSeason.Player.ApiFootballId, y => y);
+			bool hasApiPlayerBoxscores = feedFixture?.PlayerBoxscores != null;
+			bool hasApiLineups = feedFixture?.AllLineupPlayers != null;
+			foreach (var apiPlayerBase in apiPlayerBases)
+			{
+				var dbPlayerSeasonId = dbPlayerSeasonDict[apiPlayerBase.PlayerId];
+				if (!dbPlayerBoxscores.TryGetValue(apiPlayerBase.PlayerId, out PlayerBoxscore dbPlayerBoxscore))
+				{
+					dbPlayerBoxscore = new PlayerBoxscore
+					{
+						PlayerSeasonId = dbPlayerSeasonId,
+						IsStarter = apiPlayerBase.IsStarter,
+						FixtureId = dbFixtureId,
+						TeamSeasonId = apiPlayerBase.TeamId == feedFixture.HomeTeam.TeamId ? dbHomeTeamSeasonId : dbAwayTeamSeasonId
+					};
+					dbContext.PlayerBoxscores.Add(dbPlayerBoxscore);
+					hasUpdate = true;
+				}
+
+				if (hasApiPlayerBoxscores || hasApiLineups)
+				{
+					Feeds.FixtureFeed.ApiPlayerBoxscore apiPlayerBoxscore = null;
+					if (apiPlayerBase.BoxscorePlayerId.HasValue)
+					{
+						apiPlayerBoxscore = feedFixture.PlayerBoxscores.SingleOrDefault(x => x.Number == apiPlayerBase.JerseyNumber && x.TeamId == apiPlayerBase.TeamId);
+					}
+
+					Feeds.FixtureFeed.ApiLineupPlayerWithStarterStatus apiPlayerLineup = null;
+					if (apiPlayerBase.LineupPlayerId.HasValue)
+					{
+						apiPlayerLineup = feedFixture.AllLineupPlayers.SingleOrDefault(x => x.PlayerId == apiPlayerBase.LineupPlayerId.Value);
+					}
+
+					if (apiPlayerBoxscore != null || apiPlayerLineup != null)
+					{
+						if (PopulatePlayerBoxscore(apiPlayerBoxscore, apiPlayerLineup, ref dbPlayerBoxscore))
+						{
+							hasUpdate = true;
+						}
+					}
+				}
+			}
+			#endregion PLAYER BOXSCORE
+
 			if (hasUpdate)
 			{
 				dbContext.SaveChanges();
 			}
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="name">Player's Full Name</param>
+		/// <returns>Reduces player's name to initial of first name and final last name</returns>
+		private string ShortenName(string name)
+		{
+			var arrName = name.Split(" ").ToList();
+			if (arrName.Count == 1)
+			{
+				return name; // NO SHORTENING AVAILABLE
+			}
+			string firstInitial = arrName[0].First() + ".";
+			string result = firstInitial + " " + arrName[arrName.Count - 1];
+			return result;
 		}
 
 		private Dictionary<int, int> GetDbPlayerSeasonDict(SoccerDataContext dbContext, List<ApiPlayerBase> apiPlayerBases, int dbCompetitionSeasonId)
@@ -354,57 +427,44 @@ namespace SoccerData.Processors.ApiFootball.Processors
 
 		private List<ApiPlayerBase> GetApiPlayerBases(Feeds.FixtureFeed.ApiFixture feedFixture)
 		{
-			var apiPlayerBasesFromPlayers = feedFixture.PlayerBoxscores?.Where(x => x.PlayerId.HasValue).Select(x => new ApiPlayerBase(x.PlayerId.Value, x.PlayerName)).ToList();
-			var apiPlayerBasesFromEvents = feedFixture.Events?
-														.SelectMany(x => new[] { new { PlayerId = x.PlayerId, PlayerName = x.PlayerName }, new { PlayerId = x.SecondaryPlayerId, PlayerName = x.SecondaryPlayerName } })
-														.Where(x => x.PlayerId.HasValue && !string.IsNullOrEmpty(x.PlayerName))
-														.Select(x => new ApiPlayerBase(x.PlayerId.Value, x.PlayerName))
-														.ToList();
-
-			var apiPlayerBasesFromLineups = feedFixture.Lineups?
-															.Where(x => x.Value.Starters != null && x.Value.Starters.Count > 0)
-															.SelectMany(x =>
-																x.Value.Starters
-																		.Where(y => y.PlayerId.HasValue && !string.IsNullOrEmpty(y.PlayerName))
-																		.Select(y => new ApiPlayerBase(y.PlayerId.Value, y.PlayerName))
-															)
-															.ToList();
-			if (apiPlayerBasesFromLineups != null)
+			// USE LINEUPS AS BASE IF POSSIBLE, INCLUDING MAPPING FROM BOXSCORE BY JERSEY NUMBER AND TEAM
+			if (feedFixture.Lineups != null && feedFixture.Lineups.Count > 0)
 			{
-				var apiPlayerBaseSubstitutes = feedFixture.Lineups?
-															.Where(x => x.Value.Substitutes != null && x.Value.Substitutes.Count > 0)
-															.SelectMany(x =>
-																x.Value.Substitutes
-																		.Where(y => y.PlayerId.HasValue && !string.IsNullOrEmpty(y.PlayerName))
-																		.Select(y => new ApiPlayerBase(y.PlayerId.Value, y.PlayerName))
-															)
-															.ToList();
-			}
-
-			var apiPlayerBases = apiPlayerBasesFromPlayers ?? apiPlayerBasesFromLineups ?? apiPlayerBasesFromEvents;
-			if (apiPlayerBasesFromPlayers != null)
-			{
-				if (apiPlayerBasesFromLineups != null)
+				if (feedFixture.PlayerBoxscores != null && feedFixture.PlayerBoxscores.Count > 0)
 				{
-					apiPlayerBases.AddRange(apiPlayerBasesFromLineups);
+					// ALL PLAYERS SHOULD BE IN LINEUP. THERE SHOULD BE A MATCH FROM LINEUP TO BOXSCORE. VERIFY MATCHES
+					var apiBoxscorePlayerMapping = from apiLineupPlayer in feedFixture.AllLineupPlayers
+												   join apiBoxscorePlayer in feedFixture.PlayerBoxscores
+														on new { apiLineupPlayer.TeamId, Number = apiLineupPlayer.Number.Value }
+														equals new { apiBoxscorePlayer.TeamId, Number = apiBoxscorePlayer.Number }
+														into pbx
+												   from pbx2 in pbx.DefaultIfEmpty() // pbx2 IS PLAYER BOXSCORES BUT WITH NULL VALUES IF NO MATCH (FORCE LEFT JOIN INSTEAD OF INNER JOIN)
+												   select new
+												   {
+													   TeamId = apiLineupPlayer.TeamId,
+													   PlayerName = apiLineupPlayer.PlayerName,
+													   JerseyNumber = apiLineupPlayer.Number,
+													   LineupPlayerId = apiLineupPlayer.PlayerId,
+													   BoxscorePlayerId = pbx2?.PlayerId,
+													   IsStarter = apiLineupPlayer.IsStarter
+												   };
+					var apiPlayerBases = apiBoxscorePlayerMapping
+											.Where(x => x.LineupPlayerId.HasValue)
+											.Select(x => new ApiPlayerBase(x.LineupPlayerId.Value, x.TeamId, x.PlayerName, x.JerseyNumber, x.LineupPlayerId, x.BoxscorePlayerId, x.IsStarter)).ToList();
+					return apiPlayerBases;
 				}
-				if (apiPlayerBasesFromEvents != null)
+				else
 				{
-					apiPlayerBases.AddRange(apiPlayerBasesFromEvents);
+					var apiPlayerBases = feedFixture.AllLineupPlayers.Select(x => new ApiPlayerBase(x.PlayerId.Value, x.TeamId, x.PlayerName, x.Number, x.PlayerId.Value, null, x.IsStarter)).ToList();
+					return apiPlayerBases;
 				}
 			}
-			else if (apiPlayerBasesFromLineups != null)
+			else if (feedFixture.PlayerBoxscores != null && feedFixture.PlayerBoxscores.Count > 0)
 			{
-				if (apiPlayerBasesFromEvents != null)
-				{
-					apiPlayerBases.AddRange(apiPlayerBasesFromEvents);
-				}
+				var apiPlayerBases = feedFixture.PlayerBoxscores.Select(x => new ApiPlayerBase(x.PlayerId.Value, x.TeamId, x.PlayerName, x.Number, null, x.PlayerId, !(x.IsSubstitute ?? true))).ToList();
+				return apiPlayerBases;
 			}
-			if (apiPlayerBases != null)
-			{
-				apiPlayerBases = apiPlayerBases.Distinct(new ApiPlayerBaseComparer()).ToList();
-			}
-			return apiPlayerBases;
+			return null;
 		}
 
 		// TEAM IS REQUIRED (API FIXTURE ID 131874)
@@ -586,16 +646,215 @@ namespace SoccerData.Processors.ApiFootball.Processors
 		}
 		#endregion TEAM BOXSCORE HELPERS
 
+		#region PLAYER BOXSCORE HELPERS
+		private bool PopulatePlayerBoxscore(
+			Feeds.FixtureFeed.ApiPlayerBoxscore apiPlayerBoxscore,
+			Feeds.FixtureFeed.ApiLineupPlayerWithStarterStatus apiPlayerLineup,
+			ref PlayerBoxscore dbPlayerBoxscore)
+		{
+			int? playerNumber = null;
+			string position = null;
+
+			if (apiPlayerBoxscore != null)
+			{
+				playerNumber = apiPlayerBoxscore.Number;
+				position = apiPlayerBoxscore.Position;
+			}
+			else if (apiPlayerLineup != null)
+			{
+				playerNumber = apiPlayerLineup.Number;
+				position = apiPlayerLineup.Position;
+			}
+
+			bool hasUpdate = false;
+			if (dbPlayerBoxscore.JerseyNumber != playerNumber)
+			{
+				dbPlayerBoxscore.JerseyNumber = playerNumber;
+				hasUpdate = true;
+			}
+			if (dbPlayerBoxscore.Position != position)
+			{
+				dbPlayerBoxscore.Position = position;
+				hasUpdate = true;
+			}
+
+			// SET ROSTER TYPES IF LINEUP IS AVAILABLE
+			if (apiPlayerLineup != null)
+			{
+				// CAN SET ROSTER TYPE AND HAD TO PLAY AS STARTER
+				if (apiPlayerLineup.IsStarter && (!dbPlayerBoxscore.IsStarter.HasValue || !dbPlayerBoxscore.IsStarter.Value || !dbPlayerBoxscore.Played.HasValue || !dbPlayerBoxscore.Played.Value || !dbPlayerBoxscore.IsBench.HasValue || dbPlayerBoxscore.IsBench.Value))
+				{
+					dbPlayerBoxscore.IsStarter = true;
+					dbPlayerBoxscore.IsBench = false;
+					dbPlayerBoxscore.Played = true;
+					hasUpdate = true;
+				}
+
+				// CAN SET ROSTER TYPE, BUT NOT IF PLAYED
+				if (!apiPlayerLineup.IsStarter && (!dbPlayerBoxscore.IsStarter.HasValue || dbPlayerBoxscore.IsStarter.Value || !dbPlayerBoxscore.IsBench.HasValue || !dbPlayerBoxscore.IsBench.Value))
+				{
+					dbPlayerBoxscore.IsStarter = false;
+					dbPlayerBoxscore.IsBench = true;
+					hasUpdate = true;
+				}
+			}
+
+			if (apiPlayerBoxscore != null)
+			{
+				if (apiPlayerBoxscore.IsCaptain != dbPlayerBoxscore.IsCaptain
+					|| apiPlayerBoxscore.MinutesPlayed != dbPlayerBoxscore.MinutesPlayed
+					|| apiPlayerBoxscore.Offsides != dbPlayerBoxscore.Offsides
+					|| apiPlayerBoxscore.Rating != dbPlayerBoxscore.Rating
+					|| apiPlayerBoxscore.UpdateAt != dbPlayerBoxscore.ApiFootballLastUpdate)
+				{
+					dbPlayerBoxscore.IsCaptain = apiPlayerBoxscore.IsCaptain;
+					dbPlayerBoxscore.MinutesPlayed = apiPlayerBoxscore.MinutesPlayed;
+					dbPlayerBoxscore.Offsides = apiPlayerBoxscore.Offsides;
+					dbPlayerBoxscore.Rating = apiPlayerBoxscore.Rating;
+					dbPlayerBoxscore.ApiFootballLastUpdate = apiPlayerBoxscore.UpdateAt;
+					dbPlayerBoxscore.Played = apiPlayerBoxscore.MinutesPlayed > 0;
+					hasUpdate = true;
+				}
+
+				if (apiPlayerBoxscore.Cards != null)
+				{
+					if (apiPlayerBoxscore.Cards.Red != dbPlayerBoxscore.RedCards
+						|| apiPlayerBoxscore.Cards.Yellow != dbPlayerBoxscore.YellowCards)
+					{
+						dbPlayerBoxscore.RedCards = apiPlayerBoxscore.Cards.Red;
+						dbPlayerBoxscore.YellowCards = apiPlayerBoxscore.Cards.Yellow;
+						hasUpdate = true;
+					}
+				}
+
+				if (apiPlayerBoxscore.Dribbles != null)
+				{
+					if (apiPlayerBoxscore.Dribbles.Attempts != dbPlayerBoxscore.DribblesAttempted
+						|| apiPlayerBoxscore.Dribbles.Past != dbPlayerBoxscore.DribblesPastDef
+						|| apiPlayerBoxscore.Dribbles.Success != dbPlayerBoxscore.DribblesSuccessful)
+					{
+						dbPlayerBoxscore.DribblesAttempted = apiPlayerBoxscore.Dribbles.Attempts;
+						dbPlayerBoxscore.DribblesPastDef = apiPlayerBoxscore.Dribbles.Past;
+						dbPlayerBoxscore.DribblesSuccessful = apiPlayerBoxscore.Dribbles.Success;
+						hasUpdate = true;
+					}
+				}
+
+				if (apiPlayerBoxscore.Duels != null)
+				{
+					if (apiPlayerBoxscore.Duels.Total != dbPlayerBoxscore.DuelsTotal
+						|| apiPlayerBoxscore.Duels.Won != dbPlayerBoxscore.DuelsWon)
+					{
+						dbPlayerBoxscore.DuelsTotal = apiPlayerBoxscore.Duels.Total;
+						dbPlayerBoxscore.DuelsWon = apiPlayerBoxscore.Duels.Won;
+						hasUpdate = true;
+					}
+				}
+
+				if (apiPlayerBoxscore.Fouls != null)
+				{
+					if (apiPlayerBoxscore.Fouls.Committed != dbPlayerBoxscore.FoulsCommitted
+						|| apiPlayerBoxscore.Fouls.Drawn != dbPlayerBoxscore.FoulsSuffered)
+					{
+						dbPlayerBoxscore.FoulsCommitted = apiPlayerBoxscore.Fouls.Committed;
+						dbPlayerBoxscore.FoulsSuffered = apiPlayerBoxscore.Fouls.Drawn;
+						hasUpdate = true;
+					}
+				}
+
+				if (apiPlayerBoxscore.Goals != null)
+				{
+					if (apiPlayerBoxscore.Goals.Assists != dbPlayerBoxscore.Assists
+						|| apiPlayerBoxscore.Goals.Conceded != dbPlayerBoxscore.GoalsConceded
+						|| apiPlayerBoxscore.Goals.Total != dbPlayerBoxscore.Goals)
+					{
+						dbPlayerBoxscore.Assists = apiPlayerBoxscore.Goals.Assists;
+						dbPlayerBoxscore.GoalsConceded = apiPlayerBoxscore.Goals.Conceded;
+						dbPlayerBoxscore.Goals = apiPlayerBoxscore.Goals.Total;
+						hasUpdate = true;
+					}
+				}
+
+				if (apiPlayerBoxscore.Passes != null)
+				{
+					if (apiPlayerBoxscore.Passes.Accuracy != dbPlayerBoxscore.PassAccuracy
+						|| apiPlayerBoxscore.Passes.Key != dbPlayerBoxscore.KeyPasses
+						|| apiPlayerBoxscore.Passes.Total != dbPlayerBoxscore.PassAttempts)
+					{
+						dbPlayerBoxscore.PassAccuracy = apiPlayerBoxscore.Passes.Accuracy;
+						dbPlayerBoxscore.KeyPasses = apiPlayerBoxscore.Passes.Key;
+						dbPlayerBoxscore.PassAttempts = apiPlayerBoxscore.Passes.Total;
+						hasUpdate = true;
+					}
+				}
+
+				if (apiPlayerBoxscore.Penalty != null)
+				{
+					if (apiPlayerBoxscore.Penalty.Commited != dbPlayerBoxscore.PenaltiesCommitted
+						|| apiPlayerBoxscore.Penalty.Missed != dbPlayerBoxscore.PenaltiesMissed
+						|| apiPlayerBoxscore.Penalty.Saved != dbPlayerBoxscore.PenaltiesSaved
+						|| apiPlayerBoxscore.Penalty.Success != dbPlayerBoxscore.PenaltiesScored
+						|| apiPlayerBoxscore.Penalty.Won != dbPlayerBoxscore.PenaltiesWon)
+					{
+						dbPlayerBoxscore.PenaltiesCommitted = apiPlayerBoxscore.Penalty.Commited;
+						dbPlayerBoxscore.PenaltiesMissed = apiPlayerBoxscore.Penalty.Missed;
+						dbPlayerBoxscore.PenaltiesSaved = apiPlayerBoxscore.Penalty.Saved;
+						dbPlayerBoxscore.PenaltiesScored = apiPlayerBoxscore.Penalty.Success;
+						dbPlayerBoxscore.PenaltiesWon = apiPlayerBoxscore.Penalty.Won;
+						hasUpdate = true;
+					}
+				}
+
+				if (apiPlayerBoxscore.Shots != null)
+				{
+					if (apiPlayerBoxscore.Shots.On != dbPlayerBoxscore.ShotsOnGoal
+						|| apiPlayerBoxscore.Shots.Total != dbPlayerBoxscore.ShotsTaken)
+					{
+						dbPlayerBoxscore.ShotsOnGoal = apiPlayerBoxscore.Shots.On;
+						dbPlayerBoxscore.ShotsTaken = apiPlayerBoxscore.Shots.Total;
+						hasUpdate = true;
+					}
+				}
+
+				if (apiPlayerBoxscore.Tackles != null)
+				{
+					if (apiPlayerBoxscore.Tackles.Blocks != dbPlayerBoxscore.Blocks
+						|| apiPlayerBoxscore.Tackles.Interceptions != dbPlayerBoxscore.Interceptions
+						|| apiPlayerBoxscore.Tackles.Total != dbPlayerBoxscore.Tackles)
+					{
+						dbPlayerBoxscore.Blocks = apiPlayerBoxscore.Tackles.Blocks;
+						dbPlayerBoxscore.Interceptions = apiPlayerBoxscore.Tackles.Interceptions;
+						dbPlayerBoxscore.Tackles = apiPlayerBoxscore.Tackles.Total;
+						hasUpdate = true;
+					}
+				}
+			}
+
+			return hasUpdate;
+		}
+		#endregion PLAYER BOXSCORE HELPERS
+
 		#region HELPER CLASSES
+
 		private class ApiPlayerBase
 		{
 			public int PlayerId { get; set; }
+			public int TeamId { get; set; }
 			public string PlayerName { get; set; }
+			public int? JerseyNumber { get; set; }
+			public int? LineupPlayerId { get; set; }
+			public int? BoxscorePlayerId { get; set; }
+			public bool IsStarter { get; set; }
 
-			public ApiPlayerBase(int playerId, string playerName)
+			public ApiPlayerBase(int playerId, int teamId, string playerName, int? jerseyNumber, int? lineupPlayerId, int? boxscorePlayerId, bool isStarter)
 			{
 				this.PlayerId = playerId;
+				this.TeamId = teamId;
 				this.PlayerName = playerName;
+				this.JerseyNumber = jerseyNumber;
+				this.LineupPlayerId = lineupPlayerId;
+				this.BoxscorePlayerId = boxscorePlayerId;
+				this.IsStarter = isStarter;
 			}
 		}
 
