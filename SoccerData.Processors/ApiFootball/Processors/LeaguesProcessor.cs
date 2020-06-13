@@ -29,6 +29,7 @@ namespace SoccerData.Processors.ApiFootball.Processors
 
 			var countryDict = dbContext.Countries.ToDictionary(x => x.ApiFootballCountryName, y => y.CountryId);
 
+			bool isChanged = false;
 			foreach (var apiLeague in orderedApiLeagues)
 			{
 				var key = GetCompetitionKey(apiLeague);
@@ -44,9 +45,24 @@ namespace SoccerData.Processors.ApiFootball.Processors
 
 					existingCompetitions.Add(key, dbCompetition);
 					dbContext.Competitions.Add(dbCompetition);
-					dbContext.SaveChanges();
+					isChanged = true;
 				}
+			}
 
+			if (isChanged)
+			{
+				dbContext.SaveChanges();
+				isChanged = false;
+			}
+
+			foreach (var apiLeague in orderedApiLeagues)
+			{
+				var key = GetCompetitionKey(apiLeague);
+				if (!existingCompetitions.TryGetValue(key, out Competition dbCompetition))
+				{
+					// KEY SHOULD HAVE BEEN ADDED ABOVE
+					throw new Exception("SOMEHOW THE COMPETITION IS NOT IN THE DB?!?!");
+				}
 				if (!existingCompetitionSeasons.ContainsKey(apiLeague.LeagueId))
 				{
 					var dbCompetitionSeason = new CompetitionSeason
@@ -74,8 +90,12 @@ namespace SoccerData.Processors.ApiFootball.Processors
 						dbCompetition.CompetitionSeasons = new List<CompetitionSeason>();
 					}
 					dbCompetition.CompetitionSeasons.Add(dbCompetitionSeason);
-					dbContext.SaveChanges();
+					isChanged = true;
 				}
+			}
+			if (isChanged)
+			{
+				dbContext.SaveChanges();
 			}
 		}
 
