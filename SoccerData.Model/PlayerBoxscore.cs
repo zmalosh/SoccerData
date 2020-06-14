@@ -9,6 +9,8 @@ namespace SoccerData.Model
 		public int FixtureId { get; set; }
 		public int PlayerSeasonId { get; set; }
 		public int TeamSeasonId { get; set; }
+		public DateTime DateLastModifiedUtc { get; set; }
+		public DateTime DateCreatedUtc { get; set; }
 		public bool? Played { get; set; }
 		public bool? IsStarter { get; set; }
 		public bool? IsBench { get; set; }
@@ -44,8 +46,6 @@ namespace SoccerData.Model
 		public int? GoalsConceded { get; set; }
 		public int? PenaltiesSaved { get; set; }
 		public int? ApiFootballLastUpdate { get; set; }
-		public DateTime DateLastModifiedUtc { get; set; }
-		public DateTime DateCreatedUtc { get; set; }
 
 		public virtual Fixture Fixture { get; set; }
 		public virtual PlayerSeason PlayerSeason { get; set; }
