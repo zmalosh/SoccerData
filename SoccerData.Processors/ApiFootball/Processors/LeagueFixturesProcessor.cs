@@ -40,9 +40,9 @@ namespace SoccerData.Processors.ApiFootball.Processors
 			var fixtureDict = dbCompetitionSeason.Fixtures.ToDictionary(x => x.ApiFootballId);
 			var teamDict = dbContext.TeamSeasons.Include(x => x.Team).Where(x => x.CompetitionSeasonId == this.CompetitionSeasonId && teamIds.Contains(x.Team.ApiFootballId)).ToDictionary(x => x.Team.ApiFootballId, y => y.TeamSeasonId);
 			var venueDict = dbContext.VenueSeasons.Where(x => x.Season == dbCompetitionSeason.Season).ToList();
-			var roundDict = dbCompetitionSeason.CompetitionSeasonRounds.ToDictionary(x => x.ApiFootballKey, y => y.CompetitionSeasonRoundId);
+			var roundDict = dbCompetitionSeason.CompetitionSeasonRounds.ToDictionary(x => x.ApiFootballKey, y => y);
 
-			var feedFixtures = feed.Result.Fixtures.OrderBy(x => x.EventTimestamp).ThenBy(x => x.HomeTeam?.TeamName).ToList();
+			var feedFixtures = feed.Result.Fixtures.Where(x => x.Status != "Match Postponed").OrderBy(x => x.EventTimestamp).ThenBy(x => x.HomeTeam?.TeamName).ToList();
 
 			#region ADD MISSING TEAMS INDIVIDUALLY (THEY ARE NOT IN THE API TEAMS LIST)
 			var apiTeamIds = feedFixtures.SelectMany(x => new[] { x.AwayTeam.TeamId, x.HomeTeam.TeamId }).ToList();
@@ -84,14 +84,23 @@ namespace SoccerData.Processors.ApiFootball.Processors
 				var feedFixture = feedFixtures[i];
 				if (!fixtureDict.TryGetValue(feedFixture.FixtureId, out Fixture dbFixture))
 				{
-					// ASSUME ROUNDS ARE POPULATED FROM CompetitionSeasonRoundsFeed
-					var dbRoundId = roundDict[feedFixture.Round];
+					if (!roundDict.TryGetValue(feedFixture.Round, out CompetitionSeasonRound dbRound))
+					{
+						dbRound = new CompetitionSeasonRound
+						{
+							ApiFootballKey = feedFixture.Round,
+							CompetitionSeason = dbCompetitionSeason,
+							RoundName = feedFixture.Round
+						};
+						dbContext.CompetitionSeasonRounds.Add(dbRound);
+						roundDict.Add(dbRound.ApiFootballKey, dbRound);
+					}
 
 					dbFixture = new Fixture
 					{
 						ApiFootballId = feedFixture.FixtureId,
 						CompetitionSeasonId = dbCompetitionSeason.CompetitionSeasonId,
-						CompetitionSeasonRoundId = dbRoundId
+						CompetitionSeasonRound = dbRound
 					};
 					fixtureDict.Add(feedFixture.FixtureId, dbFixture);
 					dbContext.Fixtures.Add(dbFixture);

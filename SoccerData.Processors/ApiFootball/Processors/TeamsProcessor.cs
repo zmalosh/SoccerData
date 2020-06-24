@@ -92,24 +92,13 @@ namespace SoccerData.Processors.ApiFootball.Processors
 					}
 				}
 				#endregion VENUE SETTING
-
-				Country dbCountry = dbContext.Countries.SingleOrDefault(x => x.ApiFootballCountryName == (feedTeam.Country ?? "World").Replace(' ', '-').ToUpper());
-				if (dbCountry == null)
-				{
-					dbCountry = new Country
-					{
-						ApiFootballCountryName = feedTeam.Country.Replace(' ', '-'),
-						CountryAbbr = feedTeam.Code,
-						CountryName = feedTeam.Country
-					};
-				}
-
+								
 				if (!teamDict.TryGetValue(feedTeam.TeamId, out Team dbTeam))
 				{
 					dbTeam = new Team
 					{
 						ApiFootballId = feedTeam.TeamId,
-						Country = dbCountry,
+						CountryName = feedTeam.Country,
 						LogoUrl = feedTeam.Logo.ToString(),
 						TeamName = feedTeam.Name,
 						YearFounded = feedTeam.Founded,

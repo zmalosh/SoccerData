@@ -94,8 +94,12 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 			{
 				get
 				{
-					var starters = this.Lineups?.SelectMany(x => x.Value.Starters).Select(x => new ApiLineupPlayerWithStarterStatus(x, true)).ToList();
-					var subs = this.Lineups?.SelectMany(x => x.Value.Substitutes).Select(x => new ApiLineupPlayerWithStarterStatus(x, false)).ToList();
+					if(this.Lineups == null)
+					{
+						return null;
+					}
+					var starters = this.Lineups?.Where(x => x.Value.Starters != null).SelectMany(x => x.Value.Starters).Select(x => new ApiLineupPlayerWithStarterStatus(x, true)).ToList();
+					var subs = this.Lineups?.Where(x=>x.Value.Substitutes != null).SelectMany(x => x.Value.Substitutes).Select(x => new ApiLineupPlayerWithStarterStatus(x, false)).ToList();
 					var result = new List<ApiLineupPlayerWithStarterStatus>();
 					result.AddRange(starters);
 					result.AddRange(subs);

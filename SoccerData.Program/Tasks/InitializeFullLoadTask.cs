@@ -22,23 +22,23 @@ namespace SoccerData.Program.Tasks
 
 				context = new SoccerDataContext(config);
 
-				context.Database.EnsureDeleted();
-				context.Database.EnsureCreated();
-				context.SaveChanges();
+				//context.Database.EnsureDeleted();
+				//context.Database.EnsureCreated();
+				//context.SaveChanges();
 
-				var countriesProcessor = new CountriesProcessor();
-				Console.WriteLine("START COUNTRIES");
-				countriesProcessor.Run(context);
-				Console.WriteLine("SAVE COUNTRIES");
-				context.SaveChanges();
-				Console.WriteLine("END COUNTRIES");
+				//var countriesProcessor = new CountriesProcessor();
+				//Console.WriteLine("START COUNTRIES");
+				//countriesProcessor.Run(context);
+				//Console.WriteLine("SAVE COUNTRIES");
+				//context.SaveChanges();
+				//Console.WriteLine("END COUNTRIES");
 
-				var leaguesProcessor = new LeaguesProcessor();
-				Console.WriteLine("START LEAGUES");
-				leaguesProcessor.Run(context);
-				Console.WriteLine("SAVE LEAGUES");
-				context.SaveChanges();
-				Console.WriteLine("END LEAGUES");
+				//var leaguesProcessor = new LeaguesProcessor();
+				//Console.WriteLine("START LEAGUES");
+				//leaguesProcessor.Run(context);
+				//Console.WriteLine("SAVE LEAGUES");
+				//context.SaveChanges();
+				//Console.WriteLine("END LEAGUES");
 
 				List<int> desiredLeagueIds = null;
 				desiredLeagueIds = new List<int>
@@ -64,8 +64,9 @@ namespace SoccerData.Program.Tasks
 
 				var competitionSeasons = context.CompetitionSeasons
 													.Include(x => x.Competition)
-													.Where(x => desiredLeagueIds == null || desiredLeagueIds.Contains(x.ApiFootballId))
-													//.Where(x => x.StartDate.Date >= new DateTime(2019, 08, 01))
+													//.Where(x => desiredLeagueIds == null || desiredLeagueIds.Contains(x.ApiFootballId))
+													.Where(x => x.StartDate.HasValue && x.StartDate.Value.Date >= new DateTime(2019, 01, 01) && x.Competition.Country.ApiFootballCountryName.ToUpper() != "WORLD")
+													//.Where(x => (x.IsCurrent && x.Competition.CompetitionType.ToUpper() == "LEAGUE" && x.EndDate.HasValue && x.EndDate.Value.Date >= DateTime.Now.Date) && (new List<string> { "ES", "CN", "BR", "AM", "CH", "CZ", "CR", "DE", "DK", "EE", "FO", "GB", "IT", "KR", "PT", "TW" }).Contains(x.Competition.Country.CountryAbbr)) // CURRENT || (PAST FROM COUNTRIES NOT CURRENTLY CANCELLED DUE TO COVID-19)
 													//.Where(x => (x.IsCurrent && x.EndDate.Date >= DateTime.Now.Date) || (new List<string> { "MX", "RU", "CL", "DZ", "AR", "TR", "UA", "AU", "IN", "BY", "BR", "CR", "AO", "NI", "HK", "SG" }).Contains(x.Competition.Country.CountryAbbr)) // CURRENT || (PAST FROM COUNTRIES NOT CURRENTLY CANCELLED DUE TO COVID-19)
 													//.Where(x =>x.Season >= 2016 && (new List<string> { "MX", "RU", "TR", "AU", "BY", "BR", "AO", "NI", "HK", "SG", "DK", "PL", "PY", "CN" }).Contains(x.Competition.Country.CountryAbbr)) // (PAST FROM COUNTRIES NOT CURRENTLY CANCELLED DUE TO COVID-19)
 													//.Where(x => x.Season >= 2016 && (new List<string> { "BY", "NI", "ES" }).Contains(x.Competition.Country.CountryAbbr)) // (PAST FROM COUNTRIES NOT CURRENTLY CANCELLED DUE TO COVID-19)
@@ -73,7 +74,7 @@ namespace SoccerData.Program.Tasks
 													.OrderBy(x => x.CompetitionSeasonId)
 													.ToList();
 
-				int i = 0;
+				int i = 570;
 				List<Team> dbTeams;
 				for (; i < competitionSeasons.Count; i++)
 				{

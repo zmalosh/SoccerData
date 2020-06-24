@@ -15,6 +15,5 @@ namespace SoccerData.Model
 		public DateTime DateCreatedUtc { get; set; }
 
 		public ICollection<Competition> Competitions { get; set; }
-		public ICollection<Team> Teams { get; set; }
 	}
 }
