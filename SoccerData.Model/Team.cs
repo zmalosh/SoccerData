@@ -8,7 +8,6 @@ namespace SoccerData.Model
 	{
 		public int TeamId { get; set; }
 		public string TeamName { get; set; }
-		public int CountryId { get; set; }
 		public string CountryName { get; set; }
 		public int? YearFounded { get; set; }
 		public string LogoUrl { get; set; }
@@ -16,7 +15,6 @@ namespace SoccerData.Model
 		public DateTime DateLastModifiedUtc { get; set; }
 		public DateTime DateCreatedUtc { get; set; }
 
-		public virtual Country Country { get; set; }
 		public virtual IList<TeamSeason> TeamSeasons { get; set; }
 		public virtual IList<Transfer> SourceTransfers { get; set; }
 		public virtual IList<Transfer> DestTransfers { get; set; }
