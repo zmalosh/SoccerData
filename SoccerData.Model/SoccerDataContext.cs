@@ -42,6 +42,7 @@ namespace SoccerData.Model
 		public DbSet<TeamBoxscore> TeamBoxscores { get; set; }
 		public DbSet<PlayerBoxscore> PlayerBoxscores { get; set; }
 		public DbSet<FixtureEvent> FixtureEvents { get; set; }
+		public DbSet<ApiFootballPrediction> ApiFootballPredictions { get; set; }
 		public DbSet<Transfer> Transfers { get; set; }
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -223,6 +224,84 @@ namespace SoccerData.Model
 				e.Property(fe => fe.DateLastModifiedUtc).HasColumnType("datetime");
 				e.HasOne(fe => fe.Fixture).WithMany(f => f.FixtureEvents).HasForeignKey(fe => fe.FixtureId).OnDelete(DeleteBehavior.ClientSetNull);
 				e.HasOne(fe => fe.TeamSeason).WithMany(f => f.FixtureEvents).HasForeignKey(fe => fe.TeamSeasonId).OnDelete(DeleteBehavior.ClientSetNull);
+			});
+
+			modelBuilder.Entity<ApiFootballPrediction>(e =>
+			{
+				e.HasKey(afp => afp.FixtureId);
+				e.Property(afp => afp.FixtureId).ValueGeneratedNever();
+				e.Property(afp => afp.MatchWinner).HasMaxLength(16).IsRequired(false);
+				e.Property(afp => afp.Advice).HasMaxLength(256).IsRequired(false);
+				e.Property(afp => afp.WinPctHome).HasColumnType("tinyint").IsRequired(false);
+				e.Property(afp => afp.WinPctDraw).HasColumnType("tinyint").IsRequired(false);
+				e.Property(afp => afp.WinPctAway).HasColumnType("tinyint").IsRequired(false);
+				e.Property(afp => afp.GoalsHomeSpread).HasColumnType("decimal(3,1)").IsRequired(false);
+				e.Property(afp => afp.GoalsAwaySpread).HasColumnType("decimal(3,1)").IsRequired(false);
+				e.Property(afp => afp.GameTotal).HasColumnType("decimal(3,1)").IsRequired(false);
+				e.Property(afp => afp.Pred_Home_Attack).HasColumnType("tinyint").IsRequired(false);
+				e.Property(afp => afp.Pred_Away_Attack).HasColumnType("tinyint").IsRequired(false);
+				e.Property(afp => afp.Pred_Home_Defense).HasColumnType("tinyint").IsRequired(false);
+				e.Property(afp => afp.Pred_Away_Defense).HasColumnType("tinyint").IsRequired(false);
+				e.Property(afp => afp.Pred_Home_FishLaw).HasColumnType("tinyint").IsRequired(false);
+				e.Property(afp => afp.Pred_Away_FishLaw).HasColumnType("tinyint").IsRequired(false);
+				e.Property(afp => afp.Pred_Home_Forme).HasColumnType("tinyint").IsRequired(false);
+				e.Property(afp => afp.Pred_Away_Forme).HasColumnType("tinyint").IsRequired(false);
+				e.Property(afp => afp.Pred_Home_GoalsH2H).HasColumnType("tinyint").IsRequired(false);
+				e.Property(afp => afp.Pred_Away_GoalsH2H).HasColumnType("tinyint").IsRequired(false);
+				e.Property(afp => afp.Pred_Home_H2H).HasColumnType("tinyint").IsRequired(false);
+				e.Property(afp => afp.Pred_Away_H2H).HasColumnType("tinyint").IsRequired(false);
+				e.Property(afp => afp.RawLast5_Home_Attack).HasColumnType("tinyint").IsRequired(false);
+				e.Property(afp => afp.RawLast5_Home_Defense).HasColumnType("tinyint").IsRequired(false);
+				e.Property(afp => afp.RawLast5_Home_Forme).HasColumnType("tinyint").IsRequired(false);
+				e.Property(afp => afp.RawLast5_Home_Goals).HasColumnType("tinyint").IsRequired(false);
+				e.Property(afp => afp.RawLast5_Home_AllowedGoals).HasColumnType("tinyint").IsRequired(false);
+				e.Property(afp => afp.RawLast5_Away_Attack).HasColumnType("tinyint").IsRequired(false);
+				e.Property(afp => afp.RawLast5_Away_Defense).HasColumnType("tinyint").IsRequired(false);
+				e.Property(afp => afp.RawLast5_Away_Forme).HasColumnType("tinyint").IsRequired(false);
+				e.Property(afp => afp.RawLast5_Away_Goals).HasColumnType("tinyint").IsRequired(false);
+				e.Property(afp => afp.RawLast5_Away_AllowedGoals).HasColumnType("tinyint").IsRequired(false);
+				e.Property(afp => afp.H2H_Home_TotalWins).HasColumnType("smallint").IsRequired(false);
+				e.Property(afp => afp.H2H_Home_HomeWins).HasColumnType("smallint").IsRequired(false);
+				e.Property(afp => afp.H2H_Home_AwayWins).HasColumnType("smallint").IsRequired(false);
+				e.Property(afp => afp.H2H_Home_TotalLosses).HasColumnType("smallint").IsRequired(false);
+				e.Property(afp => afp.H2H_Home_HomeLosses).HasColumnType("smallint").IsRequired(false);
+				e.Property(afp => afp.H2H_Home_AwayLosses).HasColumnType("smallint").IsRequired(false);
+				e.Property(afp => afp.H2H_Home_TotalDraws).HasColumnType("smallint").IsRequired(false);
+				e.Property(afp => afp.H2H_Home_HomeDraws).HasColumnType("smallint").IsRequired(false);
+				e.Property(afp => afp.H2H_Home_AwayDraws).HasColumnType("smallint").IsRequired(false);
+				e.Property(afp => afp.Recent_Home_TotalGoals).HasColumnType("smallint").IsRequired(false);
+				e.Property(afp => afp.Recent_Home_HomeGoals).HasColumnType("smallint").IsRequired(false);
+				e.Property(afp => afp.Recent_Home_AwayGoals).HasColumnType("smallint").IsRequired(false);
+				e.Property(afp => afp.Recent_Home_TotalAllowedGoals).HasColumnType("smallint").IsRequired(false);
+				e.Property(afp => afp.Recent_Home_HomeAllowedGoals).HasColumnType("smallint").IsRequired(false);
+				e.Property(afp => afp.Recent_Home_AwayAllowedGoals).HasColumnType("smallint").IsRequired(false);
+				e.Property(afp => afp.Recent_Home_TotalWins).HasColumnType("smallint").IsRequired(false);
+				e.Property(afp => afp.Recent_Home_HomeWins).HasColumnType("smallint").IsRequired(false);
+				e.Property(afp => afp.Recent_Home_AwayWins).HasColumnType("smallint").IsRequired(false);
+				e.Property(afp => afp.Recent_Home_TotalDraws).HasColumnType("smallint").IsRequired(false);
+				e.Property(afp => afp.Recent_Home_HomeDraws).HasColumnType("smallint").IsRequired(false);
+				e.Property(afp => afp.Recent_Home_AwayDraws).HasColumnType("smallint").IsRequired(false);
+				e.Property(afp => afp.Recent_Home_TotalLosses).HasColumnType("smallint").IsRequired(false);
+				e.Property(afp => afp.Recent_Home_HomeLosses).HasColumnType("smallint").IsRequired(false);
+				e.Property(afp => afp.Recent_Home_AwayLosses).HasColumnType("smallint").IsRequired(false);
+				e.Property(afp => afp.Recent_Away_TotalGoals).HasColumnType("smallint").IsRequired(false);
+				e.Property(afp => afp.Recent_Away_HomeGoals).HasColumnType("smallint").IsRequired(false);
+				e.Property(afp => afp.Recent_Away_AwayGoals).HasColumnType("smallint").IsRequired(false);
+				e.Property(afp => afp.Recent_Away_TotalAllowedGoals).HasColumnType("smallint").IsRequired(false);
+				e.Property(afp => afp.Recent_Away_HomeAllowedGoals).HasColumnType("smallint").IsRequired(false);
+				e.Property(afp => afp.Recent_Away_AwayAllowedGoals).HasColumnType("smallint").IsRequired(false);
+				e.Property(afp => afp.Recent_Away_TotalWins).HasColumnType("smallint").IsRequired(false);
+				e.Property(afp => afp.Recent_Away_HomeWins).HasColumnType("smallint").IsRequired(false);
+				e.Property(afp => afp.Recent_Away_AwayWins).HasColumnType("smallint").IsRequired(false);
+				e.Property(afp => afp.Recent_Away_TotalDraws).HasColumnType("smallint").IsRequired(false);
+				e.Property(afp => afp.Recent_Away_HomeDraws).HasColumnType("smallint").IsRequired(false);
+				e.Property(afp => afp.Recent_Away_AwayDraws).HasColumnType("smallint").IsRequired(false);
+				e.Property(afp => afp.Recent_Away_TotalLosses).HasColumnType("smallint").IsRequired(false);
+				e.Property(afp => afp.Recent_Away_HomeLosses).HasColumnType("smallint").IsRequired(false);
+				e.Property(afp => afp.Recent_Away_AwayLosses).HasColumnType("smallint").IsRequired(false);
+				e.Property(fe => fe.DateCreatedUtc).HasColumnType("datetime");
+				e.Property(fe => fe.DateLastModifiedUtc).HasColumnType("datetime");
+				e.HasOne(afp => afp.Fixture).WithOne(f => f.ApiFootballPrediction).HasForeignKey<ApiFootballPrediction>(afp => afp.FixtureId).IsRequired(false);
 			});
 
 			modelBuilder.Entity<TeamSeason>(e =>

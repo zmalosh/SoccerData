@@ -48,6 +48,11 @@ namespace SoccerData.Processors
 				try
 				{
 					rawJson = WebClient.DownloadString(url);
+					if(rawJson == null)
+					{
+						// SOMETIME NULL COMES BACK. TRY A SECOND TIME IF THAT HAPPENS
+						rawJson = WebClient.DownloadString(url);
+					}
 				}
 				catch (Exception ex)
 				{

@@ -1,9 +1,6 @@
-﻿using System;
+﻿using SoccerData.Model;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using Microsoft.EntityFrameworkCore;
-using SoccerData.Model;
 
 namespace SoccerData.Processors.ApiFootball.Processors
 {

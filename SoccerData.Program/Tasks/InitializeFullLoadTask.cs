@@ -65,7 +65,7 @@ namespace SoccerData.Program.Tasks
 				var competitionSeasons = context.CompetitionSeasons
 													.Include(x => x.Competition)
 													//.Where(x => desiredLeagueIds == null || desiredLeagueIds.Contains(x.ApiFootballId))
-													.Where(x => x.StartDate.HasValue && x.StartDate.Value.Date >= new DateTime(2019, 01, 01) && x.Competition.Country.ApiFootballCountryName.ToUpper() != "WORLD")
+													.Where(x => x.StartDate.HasValue && /*x.StartDate.Value.Date >= new DateTime(2014, 01, 01) &&*/ x.StartDate.Value.Date < new DateTime(2016, 01, 01))
 													//.Where(x => (x.IsCurrent && x.Competition.CompetitionType.ToUpper() == "LEAGUE" && x.EndDate.HasValue && x.EndDate.Value.Date >= DateTime.Now.Date) && (new List<string> { "ES", "CN", "BR", "AM", "CH", "CZ", "CR", "DE", "DK", "EE", "FO", "GB", "IT", "KR", "PT", "TW" }).Contains(x.Competition.Country.CountryAbbr)) // CURRENT || (PAST FROM COUNTRIES NOT CURRENTLY CANCELLED DUE TO COVID-19)
 													//.Where(x => (x.IsCurrent && x.EndDate.Date >= DateTime.Now.Date) || (new List<string> { "MX", "RU", "CL", "DZ", "AR", "TR", "UA", "AU", "IN", "BY", "BR", "CR", "AO", "NI", "HK", "SG" }).Contains(x.Competition.Country.CountryAbbr)) // CURRENT || (PAST FROM COUNTRIES NOT CURRENTLY CANCELLED DUE TO COVID-19)
 													//.Where(x =>x.Season >= 2016 && (new List<string> { "MX", "RU", "TR", "AU", "BY", "BR", "AO", "NI", "HK", "SG", "DK", "PL", "PY", "CN" }).Contains(x.Competition.Country.CountryAbbr)) // (PAST FROM COUNTRIES NOT CURRENTLY CANCELLED DUE TO COVID-19)
@@ -74,7 +74,7 @@ namespace SoccerData.Program.Tasks
 													.OrderBy(x => x.CompetitionSeasonId)
 													.ToList();
 
-				int i = 570;
+				int i = 710; // REDO API LEAGUE ID 2432
 				List<Team> dbTeams;
 				for (; i < competitionSeasons.Count; i++)
 				{
@@ -120,7 +120,7 @@ namespace SoccerData.Program.Tasks
 						var competitionSeasonFixtures = context.Fixtures.Where(x => x.CompetitionSeasonId == competitionSeasonId).ToList();
 						for (int j = 0; j < competitionSeasonFixtures.Count; j++)
 						{
-							Console.WriteLine($"LEAGUE {i + 1} OF {competitionSeasons.Count} - FIXTURE {j + 1} OF {competitionSeasonFixtures.Count}");
+							Console.WriteLine($"LEAGUE {i + 1} OF {competitionSeasons.Count} - FIXTURE {j + 1} OF {competitionSeasonFixtures.Count} - {competitionSeason.Competition.CompetitionName} ({competitionSeason.Competition.CountryId})");
 
 							var dbFixture = competitionSeasonFixtures[j];
 
@@ -129,6 +129,9 @@ namespace SoccerData.Program.Tasks
 								// TODO: PROCESS FIXTURE DATA (INCLUDE SETTING HasTeamBoxscores VALUE ON FIXTURE)
 								var fixtureProcessor = new FixtureProcessor(dbFixture.ApiFootballId);
 								fixtureProcessor.Run(context);
+
+								var apiFootballPredictionsProcessor = new ApiFootballPredictionsProcessor(dbFixture.ApiFootballId);
+								apiFootballPredictionsProcessor.Run(context);
 							}
 
 							if (j % 5 == 4)
@@ -144,21 +147,22 @@ namespace SoccerData.Program.Tasks
 				}
 				context.SaveChanges();
 
-				//dbTeams = context.Teams.ToList();
-				//for(int idxTeams = 0; idxTeams < dbTeams.Count; idxTeams++)
-				//{
-				//	Console.WriteLine($"TRANSFERS: TEAM {idxTeams + 1} OF {dbTeams.Count}");
-				//	var dbTeam = dbTeams[idxTeams];
-				//	var transfersProcessor = new TransfersProcessor(dbTeam.ApiFootballId);
-				//	transfersProcessor.Run(context);
+				var apiTeamIds = context.Teams.Select(x => x.ApiFootballId).Distinct().ToList();
+				i = 0;
+				for (; i < apiTeamIds.Count; i++)
+				{
+					Console.WriteLine($"TRANSFERS - TEAM {i + 1} OF {apiTeamIds.Count}");
+					var apiTeamId = apiTeamIds[i];
+					var teamTransfersProcessor = new TransfersProcessor(apiTeamId);
+					teamTransfersProcessor.Run(context);
 
-				//	if (idxTeams % 10 == 9)
-				//	{
-				//		Console.WriteLine("NEW CONTEXT");
-				//		context.Dispose();
-				//		context = new SoccerDataContext(config);
-				//	}
-				//}
+					if (i % 5 == 4)
+					{
+						Console.WriteLine("NEW CONTEXT");
+						context.Dispose();
+						context = new SoccerDataContext(config);
+					}
+				}
 			}
 			finally
 			{

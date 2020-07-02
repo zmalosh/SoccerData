@@ -44,7 +44,7 @@ namespace SoccerData.Processors.ApiFootball.Processors
 
 			Feeds.FixtureFeed.ApiFixture feedFixture = feed.Result.Fixtures.SingleOrDefault();
 
-			if(feedFixture == null)
+			if (feedFixture == null)
 			{
 				return;
 			}
@@ -75,17 +75,17 @@ namespace SoccerData.Processors.ApiFootball.Processors
 				string awayTeamName = feedFixture.AwayTeam.TeamName;
 
 				// MISMATCH BETWEEN PLAYING TEAM NAMES AND LINEUP DICT KEYS HAS OCCURRED (API fixtureID: 188155)
-				bool hasHomeTeamName = feedFixture.Lineups.ContainsKey(homeTeamName);
-				bool hasAwayTeamName = feedFixture.Lineups.ContainsKey(awayTeamName);
+				bool hasHomeTeamName = feedFixture.Lineups.Any(x => string.Equals(x.Key, homeTeamName, StringComparison.InvariantCultureIgnoreCase));
+				bool hasAwayTeamName = feedFixture.Lineups.Any(x => string.Equals(x.Key, awayTeamName, StringComparison.InvariantCultureIgnoreCase));
 				if (!hasHomeTeamName || !hasAwayTeamName)
 				{
 					if (hasHomeTeamName && !hasAwayTeamName)
 					{
-						awayTeamName = feedFixture.Lineups.Keys.Single(x => x != homeTeamName);
+						awayTeamName = feedFixture.Lineups.Keys.Single(x => !string.Equals(x, homeTeamName, StringComparison.InvariantCultureIgnoreCase));
 					}
 					else if (!hasHomeTeamName && hasAwayTeamName)
 					{
-						homeTeamName = feedFixture.Lineups.Keys.Single(x => x != awayTeamName);
+						homeTeamName = feedFixture.Lineups.Keys.Single(x => !string.Equals(x, awayTeamName, StringComparison.InvariantCultureIgnoreCase));
 					}
 					else
 					{
@@ -93,8 +93,8 @@ namespace SoccerData.Processors.ApiFootball.Processors
 					}
 				}
 
-				homeLineup = feedFixture.Lineups[homeTeamName];
-				awayLineup = feedFixture.Lineups[awayTeamName];
+				homeLineup = feedFixture.Lineups.Single(x => string.Equals(x.Key, homeTeamName, StringComparison.InvariantCultureIgnoreCase)).Value;
+				awayLineup = feedFixture.Lineups.Single(x => string.Equals(x.Key, awayTeamName, StringComparison.InvariantCultureIgnoreCase)).Value;
 				homeFormation = homeLineup.Formation;
 				awayFormation = awayLineup.Formation;
 			}
@@ -119,6 +119,7 @@ namespace SoccerData.Processors.ApiFootball.Processors
 							};
 							dbContext.Coaches.Add(dbHomeCoach);
 							dbContext.SaveChanges();
+							dbCoaches.Add(dbHomeCoach.CoachId, dbHomeCoach); // DUE TO BAD DATA, HOME COACH AND AWAY COACH MAY BE THE SAME (API GAME 126635)
 						}
 						homeCoachId = dbHomeCoach.CoachId;
 					}
@@ -463,7 +464,7 @@ namespace SoccerData.Processors.ApiFootball.Processors
 				}
 				else
 				{
-					apiPlayerBases = feedFixture.AllLineupPlayers
+					apiPlayerBases = feedFixture.AllLineupPlayers?
 													.Where(x => x.PlayerId.HasValue)
 													.Select(x => new ApiPlayerBase(x.PlayerId.Value, x.TeamId, x.PlayerName, x.Number, x.PlayerId.Value, null, x.IsStarter)).ToList();
 				}
@@ -473,7 +474,7 @@ namespace SoccerData.Processors.ApiFootball.Processors
 				apiPlayerBases = feedFixture.PlayerBoxscores.Select(x => new ApiPlayerBase(x.PlayerId.Value, x.TeamId, x.PlayerName, x.Number, null, x.PlayerId, !(x.IsSubstitute ?? true))).ToList();
 			}
 
-			if (apiPlayerBases == null)
+			if (apiPlayerBases == null || apiPlayerBases.Count == 0)
 			{
 				return null;
 			}

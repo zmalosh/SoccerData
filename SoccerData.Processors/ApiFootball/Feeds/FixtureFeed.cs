@@ -94,18 +94,46 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 			{
 				get
 				{
-					if(this.Lineups == null)
+					if (this._allLineupPlayers != null)
+					{
+						return this._allLineupPlayers;
+					}
+
+					// ONLY PROCESS IF 2 LINEUPS ARE SET
+					if (this.Lineups == null || this.Lineups.Count(x => x.Value != null) != 2)
 					{
 						return null;
 					}
-					var starters = this.Lineups?.Where(x => x.Value.Starters != null).SelectMany(x => x.Value.Starters).Select(x => new ApiLineupPlayerWithStarterStatus(x, true)).ToList();
-					var subs = this.Lineups?.Where(x=>x.Value.Substitutes != null).SelectMany(x => x.Value.Substitutes).Select(x => new ApiLineupPlayerWithStarterStatus(x, false)).ToList();
-					var result = new List<ApiLineupPlayerWithStarterStatus>();
-					result.AddRange(starters);
-					result.AddRange(subs);
-					return result;
+
+					this._allLineupPlayers = new List<ApiLineupPlayerWithStarterStatus>();
+					foreach (var lineup in this.Lineups)
+					{
+						if (lineup.Value != null)
+						{
+							// SOMETIMES TeamId IS NULL ON THE ApiLineupPlayer OBJECT
+							int teamId = string.Equals(lineup.Key, this.AwayTeam.TeamName, StringComparison.InvariantCultureIgnoreCase) ? this.AwayTeam.TeamId : this.HomeTeam.TeamId;
+							if (lineup.Value?.Starters != null)
+							{
+								foreach (var apiLineupPlayer in lineup.Value.Starters)
+								{
+									this._allLineupPlayers.Add(new ApiLineupPlayerWithStarterStatus(apiLineupPlayer, apiLineupPlayer.TeamId ?? teamId, true));
+								}
+								// ONLY PROCESS SUBS IF THERE ARE STARTERS
+								if (lineup.Value.Substitutes != null)
+								{
+									foreach (var apiLineupPlayer in lineup.Value.Substitutes)
+									{
+										this._allLineupPlayers.Add(new ApiLineupPlayerWithStarterStatus(apiLineupPlayer, apiLineupPlayer.TeamId ?? teamId, false));
+									}
+								}
+							}
+						}
+					}
+					return this._allLineupPlayers;
 				}
 			}
+
+			private List<ApiLineupPlayerWithStarterStatus> _allLineupPlayers = null;
 
 			[JsonProperty("statistics")]
 			public Dictionary<string, ApiTeamStatistic> TeamStatistics { get; set; }
@@ -198,7 +226,7 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 		public class ApiLineupPlayer
 		{
 			[JsonProperty("team_id")]
-			public int TeamId { get; set; }
+			public int? TeamId { get; set; }
 
 			[JsonProperty("player_id")]
 			public int? PlayerId { get; set; }
@@ -227,9 +255,9 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 			public string Position { get; set; }
 			public bool IsStarter { get; set; }
 
-			public ApiLineupPlayerWithStarterStatus(ApiLineupPlayer player, bool isStarter)
+			public ApiLineupPlayerWithStarterStatus(ApiLineupPlayer player, int teamId, bool isStarter)
 			{
-				this.TeamId = player.TeamId;
+				this.TeamId = teamId;
 				this.PlayerId = player.PlayerId;
 				this.PlayerName = player.PlayerName;
 				this.Number = player.Number;

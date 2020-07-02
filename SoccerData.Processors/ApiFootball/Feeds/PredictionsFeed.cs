@@ -20,7 +20,7 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 			[JsonProperty("results")]
 			public int Count { get; set; }
 
-			[JsonProperty("fixtures")]
+			[JsonProperty("predictions")]
 			public List<ApiPrediction> Predictions { get; set; }
 		}
 		public class ApiPrediction
@@ -28,14 +28,23 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 			[JsonProperty("match_winner")]
 			public string MatchWinner { get; set; }
 
+			[JsonIgnore]
+			public decimal? GameTotal { get { return decimal.TryParse(this._gameTotal, out decimal dtp) ? dtp : (decimal?)null; } }
+
 			[JsonProperty("under_over")]
-			public string UnderOver { get; set; }
+			private string _gameTotal { get; set; }
+
+			[JsonIgnore]
+			public decimal? GoalsHome { get { return decimal.TryParse(this._goalsHome, out decimal dtp) ? dtp : (decimal?)null; } }
+
+			[JsonIgnore]
+			public decimal? GoalsAway { get { return decimal.TryParse(this._goalsAway, out decimal dtp) ? dtp : (decimal?)null; } }
 
 			[JsonProperty("goals_home")]
-			public string GoalsHome { get; set; }
+			public string _goalsHome { get; set; }
 
 			[JsonProperty("goals_away")]
-			public string GoalsAway { get; set; }
+			public string _goalsAway { get; set; }
 
 			[JsonProperty("advice")]
 			public string Advice { get; set; }
@@ -76,11 +85,17 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 
 		public class ApiPredictionTeamValues
 		{
+			[JsonIgnore]
+			public int? HomeWinPct { get { return int.TryParse(this._home.Replace("%", string.Empty), out int itp) ? itp : (int?)null; } }
+
+			[JsonIgnore]
+			public int? AwayWinPct { get { return int.TryParse(this._away.Replace("%", string.Empty), out int itp) ? itp : (int?)null; } }
+
 			[JsonProperty("home")]
-			public string Home { get; set; }
+			private string _home { get; set; }
 
 			[JsonProperty("away")]
-			public string Away { get; set; }
+			private string _away { get; set; }
 		}
 
 		public class ApiPredictionH2H
@@ -206,13 +221,13 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 			public ApiPredictionTeamAllLastMatches AllLastMatches { get; set; }
 
 			[JsonProperty("last_h2h")]
-			public LastH2H LastH2H { get; set; }
+			public ApiPredictionLastMatchesH2H LastH2H { get; set; }
 		}
 
 		public class ApiPredictionTeamAllLastMatches
 		{
 			[JsonProperty("matchs")]
-			public LastH2H Matches { get; set; }
+			public ApiPredictionLastMatchesH2H Matches { get; set; }
 
 			[JsonProperty("goals")]
 			public ApiPredictionTeamGoalsTotal Goals { get; set; }
@@ -254,28 +269,28 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 		public class ApiPredictionStatAvgBreakdown
 		{
 			[JsonProperty("home")]
-			public double Home { get; set; }
+			public decimal Home { get; set; }
 
 			[JsonProperty("away")]
-			public double Away { get; set; }
+			public decimal Away { get; set; }
 
 			[JsonProperty("total")]
-			public double Total { get; set; }
+			public decimal Total { get; set; }
 		}
 
-		public class LastH2H
+		public class ApiPredictionLastMatchesH2H
 		{
 			[JsonProperty("matchsPlayed", NullValueHandling = NullValueHandling.Ignore)]
 			public ApiPredictionStatTotalBreakdown MatchesPlayed { get; set; }
 
-			[JsonProperty("wins")]
+			[JsonProperty("wins", NullValueHandling = NullValueHandling.Ignore)]
 			public ApiPredictionStatTotalBreakdown Wins { get; set; }
 
-			[JsonProperty("draws")]
+			[JsonProperty("draws", NullValueHandling = NullValueHandling.Ignore)]
 			public ApiPredictionStatTotalBreakdown Draws { get; set; }
 
-			[JsonProperty("loses")]
-			public ApiPredictionStatTotalBreakdown Loses { get; set; }
+			[JsonProperty("loses", NullValueHandling = NullValueHandling.Ignore)]
+			public ApiPredictionStatTotalBreakdown Losses { get; set; }
 
 			[JsonProperty("played", NullValueHandling = NullValueHandling.Ignore)]
 			public ApiPredictionStatTotalBreakdown Played { get; set; }
@@ -284,70 +299,70 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 		public class ApiPredictionTeamLast5Matches
 		{
 			[JsonIgnore]
-			public double? Forme
+			public int? Forme
 			{
-				get { return double.TryParse(this._forme.Replace("%", string.Empty), out double dtp) ? dtp : (double?)null; }
+				get { return int.TryParse(this._forme.Replace("%", string.Empty), out int itp) ? itp : (int?)null; }
 			}
 
 			[JsonProperty("forme")]
 			private string _forme { get; set; }
 
 			[JsonIgnore]
-			public double? Attack
+			public int? Attack
 			{
-				get { return double.TryParse(this._attack.Replace("%", string.Empty), out double dtp) ? dtp : (double?)null; }
+				get { return int.TryParse(this._attack.Replace("%", string.Empty), out int itp) ? itp : (int?)null; }
 			}
 
 			[JsonProperty("att")]
 			public string _attack { get; set; }
 
 			[JsonIgnore]
-			public double? Defense
+			public int? Defense
 			{
-				get { return double.TryParse(this._defense.Replace("%", string.Empty), out double dtp) ? dtp : (double?)null; }
+				get { return int.TryParse(this._defense.Replace("%", string.Empty), out int itp) ? itp : (int?)null; }
 			}
 
 			[JsonProperty("def")]
 			public string _defense { get; set; }
 
 			[JsonProperty("goals")]
-			public int Goals { get; set; }
+			public int? Goals { get; set; }
 
 			[JsonProperty("goals_avg")]
-			public double GoalsAvg { get; set; }
+			public decimal? GoalsAvg { get; set; }
 
 			[JsonProperty("goals_against")]
-			public int GoalsAgainst { get; set; }
+			public int? GoalsAgainst { get; set; }
 
 			[JsonProperty("goals_against_avg")]
-			public double GoalsAgainstAvg { get; set; }
+			public decimal? GoalsAgainstAvg { get; set; }
 		}
 
 		public class ApiPredictionWinningPercent
 		{
 			[JsonIgnore]
-			public double? Away
+			public int? Away
 			{
-				get { return double.TryParse(this._away.Replace("%", string.Empty), out double dtp) ? dtp : (double?)null; }
+				get { return int.TryParse(this._away.Replace("%", string.Empty), out int itp) ? itp : (int?)null; }
 			}
 
 			[JsonIgnore]
-			public double? Draws
+			public int? Draw
 			{
-				get { return double.TryParse(this._draws.Replace("%", string.Empty), out double dtp) ? dtp : (double?)null; }
+				get { return int.TryParse(this._draw.Replace("%", string.Empty), out int itp) ? itp : (int?)null; }
 			}
 
 			[JsonIgnore]
-			public double? Home
+			public int? Home
 			{
-				get { return double.TryParse(this._home.Replace("%", string.Empty), out double dtp) ? dtp : (double?)null; }
+				get { return int.TryParse(this._home.Replace("%", string.Empty), out int itp) ? itp : (int?)null; }
 			}
 
 			[JsonProperty("home")]
 			private string _home { get; set; }
 
 			[JsonProperty("draws")]
-			private string _draws { get; set; }
+			private string _draw { get; set; }
 
 			[JsonProperty("away")]
 			private string _away { get; set; }

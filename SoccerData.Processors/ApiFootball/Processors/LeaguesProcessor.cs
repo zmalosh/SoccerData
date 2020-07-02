@@ -22,7 +22,7 @@ namespace SoccerData.Processors.ApiFootball.Processors
 			var rawJson = JsonUtility.GetRawJsonFromUrl(url);
 			var feed = Feeds.LeaguesFeed.FromJson(rawJson);
 
-			var orderedApiLeagues = feed.Result.Leagues.OrderBy(x => x.Season).ThenBy(x => x.CountryCode).ThenBy(x => x.Name).ToList();
+			var orderedApiLeagues = feed.Result.Leagues.OrderBy(x => x.CountryCode).ThenBy(x => x.Name).ThenBy(x => x.Season).ToList();
 
 			var existingCompetitions = dbContext.Competitions.Include(x => x.Country).ToDictionary(x => GetCompetitionKey(x), y => y);
 			var existingCompetitionSeasons = dbContext.CompetitionSeasons.ToDictionary(x => x.ApiFootballId);
