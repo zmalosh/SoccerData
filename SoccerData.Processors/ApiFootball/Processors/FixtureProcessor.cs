@@ -19,11 +19,11 @@ namespace SoccerData.Processors.ApiFootball.Processors
 
 		private const int NullIntDictKey = int.MinValue;
 
-		public FixtureProcessor(int apiFootballFixtureId, bool checkEntitiesExist = true)
+		public FixtureProcessor(int apiFootballFixtureId, bool checkEntitiesExist = true, int? cacheLengthSec = 120 * 24 * 60 * 60)
 		{
 			this.ApiFootballFixtureId = apiFootballFixtureId;
 			this.CheckEntitiesExist = checkEntitiesExist;
-			this.JsonUtility = new JsonUtility(120 * 24 * 60 * 60, sourceType: JsonUtility.JsonSourceType.ApiFootball); // 230K+ FIXTURES.... SAVE FINISHED GAMES FOR A LONG TIME (120 DAYS?) TO AVOID QUOTA ISSUES
+			this.JsonUtility = new JsonUtility(cacheLengthSec, sourceType: JsonUtility.JsonSourceType.ApiFootball); // 230K+ FIXTURES.... SAVE FINISHED GAMES FOR A LONG TIME (120 DAYS?) TO AVOID QUOTA ISSUES
 		}
 
 		public void Run(SoccerDataContext dbContext)
@@ -352,7 +352,7 @@ namespace SoccerData.Processors.ApiFootball.Processors
 			#region PLAYER BOXSCORE
 			if (apiPlayerBases != null && apiPlayerBases.Count > 0)
 			{
-				var dbPlayerBoxscores = dbContext.PlayerBoxscores.Where(x => x.FixtureId == dbFixtureId).ToDictionary(x => x.PlayerSeason.Player.ApiFootballId, y => y);
+				var dbPlayerBoxscores = dbContext.PlayerBoxscores.Where(x => x.FixtureId == dbFixtureId && x.PlayerSeason != null && x.PlayerSeason.Player != null).ToDictionary(x => x.PlayerSeason.Player.ApiFootballId, y => y);
 				bool hasApiPlayerBoxscores = feedFixture?.PlayerBoxscores != null;
 				bool hasApiLineups = feedFixture?.AllLineupPlayers != null;
 				foreach (var apiPlayerBase in apiPlayerBases)

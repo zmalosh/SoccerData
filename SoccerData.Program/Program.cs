@@ -16,6 +16,11 @@ namespace SoccerData.Program
 					{
 						task = new Tasks.InitializeFullLoadTask();
 					}
+
+					if (o.DailyFixtureUpdateTask)
+					{
+						task = new Tasks.DailyFixtureUpdateTask();
+					}
 				});
 
 			if (task != null)

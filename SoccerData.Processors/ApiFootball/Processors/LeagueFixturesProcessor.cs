@@ -12,10 +12,10 @@ namespace SoccerData.Processors.ApiFootball.Processors
 		private int CompetitionSeasonId;
 		private readonly JsonUtility JsonUtility;
 
-		public LeagueFixturesProcessor(int competitionSeasonId)
+		public LeagueFixturesProcessor(int competitionSeasonId, int? cacheLengthSec = 120 * 24 * 60 * 60)
 		{
 			this.CompetitionSeasonId = competitionSeasonId;
-			this.JsonUtility = new JsonUtility(120 * 24 * 60 * 60, sourceType: JsonUtility.JsonSourceType.ApiFootball);
+			this.JsonUtility = new JsonUtility(cacheLengthSec, sourceType: JsonUtility.JsonSourceType.ApiFootball);
 		}
 
 		public void Run(SoccerDataContext dbContext)
@@ -111,8 +111,8 @@ namespace SoccerData.Processors.ApiFootball.Processors
 				#region TEAMS
 				if (!dbFixture.HomeTeamSeasonId.HasValue
 					|| !dbFixture.AwayTeamSeasonId.HasValue
-					|| (feedFixture.HomeTeam?.TeamId != null && dbFixture.HomeTeamSeason.Team.ApiFootballId != feedFixture.HomeTeam.TeamId)
-					|| (feedFixture.AwayTeam?.TeamId != null && dbFixture.AwayTeamSeason.Team.ApiFootballId != feedFixture.AwayTeam.TeamId))
+					|| (feedFixture.HomeTeam?.TeamId != null && dbFixture.HomeTeamSeason?.Team != null && dbFixture.HomeTeamSeason.Team.ApiFootballId != feedFixture.HomeTeam.TeamId)
+					|| (feedFixture.AwayTeam?.TeamId != null && dbFixture.AwayTeamSeason?.Team != null && dbFixture.AwayTeamSeason.Team.ApiFootballId != feedFixture.AwayTeam.TeamId))
 				{
 					if (feedFixture.HomeTeam != null)
 					{

@@ -2,7 +2,7 @@
   "profiles": {
     "SoccerData.Program": {
       "commandName": "Project",
-      "commandLineArgs": "-i"
+      "commandLineArgs": "-d"
     }
   }
 }

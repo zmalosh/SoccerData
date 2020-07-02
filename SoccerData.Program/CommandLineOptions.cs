@@ -9,5 +9,8 @@ namespace SoccerData.Program
 	{
 		[Option('i', "initializeFullLoad", Required = false, HelpText = "Initialize database in full.")]
 		public bool InitializeFullLoadTask { get; set; }
+
+		[Option('d', "dailyFixtureTask", Required = false, HelpText = "Daily Fixture Data Quality Check")]
+		public bool DailyFixtureUpdateTask { get; set; }
 	}
 }

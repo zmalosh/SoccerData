@@ -11,10 +11,10 @@ namespace SoccerData.Processors.ApiFootball.Processors
 		private readonly int ApiFootballFixtureId;
 		private readonly JsonUtility JsonUtility;
 
-		public FixtureTeamStatsProcessor(int apiFootballFixtureId)
+		public FixtureTeamStatsProcessor(int apiFootballFixtureId, int? cacheLengthSec = 120 * 24 * 60 * 60)
 		{
 			this.ApiFootballFixtureId = apiFootballFixtureId;
-			this.JsonUtility = new JsonUtility(120 * 24 * 60 * 60, sourceType: JsonUtility.JsonSourceType.ApiFootball); // 230K+ FIXTURES.... SAVE FINISHED GAMES FOR A LONG TIME (120 DAYS?) TO AVOID QUOTA ISSUES
+			this.JsonUtility = new JsonUtility(cacheLengthSec, sourceType: JsonUtility.JsonSourceType.ApiFootball); // 230K+ FIXTURES.... SAVE FINISHED GAMES FOR A LONG TIME (120 DAYS?) TO AVOID QUOTA ISSUES
 		}
 
 		public void Run(SoccerDataContext dbContext)
@@ -92,6 +92,7 @@ namespace SoccerData.Processors.ApiFootball.Processors
 			if (hasUpdate)
 			{
 				dbFixture.HasTeamBoxscores = true;
+				dbFixture.DateLastModifiedUtc = DateTime.UtcNow;
 				dbContext.SaveChanges();
 			}
 		}

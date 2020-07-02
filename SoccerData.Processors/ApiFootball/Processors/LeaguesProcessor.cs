@@ -11,9 +11,9 @@ namespace SoccerData.Processors.ApiFootball.Processors
 	{
 		private readonly JsonUtility JsonUtility;
 
-		public LeaguesProcessor()
+		public LeaguesProcessor(int? cacheLengthSec = 120 * 24 * 60 * 60)
 		{
-			this.JsonUtility = new JsonUtility(24 * 60 * 60, sourceType: JsonUtility.JsonSourceType.ApiFootball);
+			this.JsonUtility = new JsonUtility(cacheLengthSec, sourceType: JsonUtility.JsonSourceType.ApiFootball);
 		}
 
 		public void Run(SoccerDataContext dbContext)

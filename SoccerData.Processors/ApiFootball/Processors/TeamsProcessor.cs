@@ -14,10 +14,10 @@ namespace SoccerData.Processors.ApiFootball.Processors
 
 		private const string WorldCountryName = "WORLD";
 
-		public TeamsProcessor(int competitionSeasonId)
+		public TeamsProcessor(int competitionSeasonId, int? cacheLengthSec = 7 * 24 * 60 * 60)
 		{
 			this.CompetitionSeasonId = competitionSeasonId;
-			this.JsonUtility = new JsonUtility(7 * 24 * 60 * 60, sourceType: JsonUtility.JsonSourceType.ApiFootball);
+			this.JsonUtility = new JsonUtility(cacheLengthSec, sourceType: JsonUtility.JsonSourceType.ApiFootball);
 		}
 
 		public void Run(SoccerDataContext dbContext)
@@ -92,7 +92,7 @@ namespace SoccerData.Processors.ApiFootball.Processors
 					}
 				}
 				#endregion VENUE SETTING
-								
+
 				if (!teamDict.TryGetValue(feedTeam.TeamId, out Team dbTeam))
 				{
 					dbTeam = new Team

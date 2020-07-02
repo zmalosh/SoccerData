@@ -13,20 +13,20 @@ namespace SoccerData.Processors.ApiFootball.Processors
 
 		private const int CacheDays = 30;
 
-		public TeamSquadProcessor(int apiFootballTeamId, int apiFootballLeagueId)
+		public TeamSquadProcessor(int apiFootballTeamId, int apiFootballLeagueId, int? cacheLengthSec = CacheDays * 24 * 60 * 60)
 		{
 			this.ApiFootballTeamId = apiFootballTeamId;
 			this.ApiFootballLeagueId = apiFootballLeagueId;
 			this.DbCompetitionSeason = null;
-			this.JsonUtility = new JsonUtility(CacheDays * 24 * 60 * 60, sourceType: JsonUtility.JsonSourceType.ApiFootball); // 230K+ FIXTURES.... SAVE FINISHED GAMES FOR A LONG TIME (120 DAYS?) TO AVOID QUOTA ISSUES
+			this.JsonUtility = new JsonUtility(cacheLengthSec, sourceType: JsonUtility.JsonSourceType.ApiFootball); // 230K+ FIXTURES.... SAVE FINISHED GAMES FOR A LONG TIME (120 DAYS?) TO AVOID QUOTA ISSUES
 		}
 
-		public TeamSquadProcessor(int apiFootballTeamId, CompetitionSeason dbCompetitionSeason)
+		public TeamSquadProcessor(int apiFootballTeamId, CompetitionSeason dbCompetitionSeason, int? cacheLengthSec = CacheDays * 24 * 60 * 60)
 		{
 			this.ApiFootballTeamId = apiFootballTeamId;
 			this.ApiFootballLeagueId = dbCompetitionSeason.ApiFootballId;
 			this.DbCompetitionSeason = dbCompetitionSeason;
-			this.JsonUtility = new JsonUtility(CacheDays * 24 * 60 * 60, sourceType: JsonUtility.JsonSourceType.ApiFootball); // 230K+ FIXTURES.... SAVE FINISHED GAMES FOR A LONG TIME (120 DAYS?) TO AVOID QUOTA ISSUES
+			this.JsonUtility = new JsonUtility(cacheLengthSec, sourceType: JsonUtility.JsonSourceType.ApiFootball); // 230K+ FIXTURES.... SAVE FINISHED GAMES FOR A LONG TIME (120 DAYS?) TO AVOID QUOTA ISSUES
 		}
 
 		public void Run(SoccerDataContext dbContext)
