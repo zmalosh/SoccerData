@@ -4,14 +4,14 @@ using Newtonsoft.Json;
 
 namespace SoccerData.Processors.ApiFootball.Feeds
 {
-	public class BookmakersFeed
+	public class OddsBookmakersFeed
 	{
 		public static string GetFeedUrl()
 		{
 			return $"https://api-football-v1.p.rapidapi.com/v2/odds/bookmakers/";
 		}
 
-		public static BookmakersFeed FromJson(string json) => JsonConvert.DeserializeObject<BookmakersFeed>(json, Converter.Settings);
+		public static OddsBookmakersFeed FromJson(string json) => JsonConvert.DeserializeObject<OddsBookmakersFeed>(json, Converter.Settings);
 
 		[JsonProperty("api")]
 		public ApiResult Result { get; set; }
@@ -37,6 +37,6 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 
 	public static partial class Serialize
 	{
-		public static string ToJson(this BookmakersFeed self) => JsonConvert.SerializeObject(self, Converter.Settings);
+		public static string ToJson(this OddsBookmakersFeed self) => JsonConvert.SerializeObject(self, Converter.Settings);
 	}
 }
