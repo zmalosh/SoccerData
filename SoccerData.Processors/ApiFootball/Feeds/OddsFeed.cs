@@ -1,15 +1,36 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace SoccerData.Processors.ApiFootball.Feeds
 {
 	public class OddsFeed
 	{
-		public static string GetFeedUrl(int? page = null)
+		public static string GetFeedUrlByDate(DateTime date, int? page = null)
 		{
-			return $"https://api-football-v1.p.rapidapi.com/v2/odds/bookmakers/";
+			if (page.HasValue)
+			{
+				return $"https://api-football-v1.p.rapidapi.com/v2/odds/date/{date.ToString("yyyy-MM-dd")}?page={page}";
+			}
+			return $"https://api-football-v1.p.rapidapi.com/v2/odds/date/{date.ToString("yyyy-MM-dd")}";
+		}
+
+		public static string GetFeedUrlByFixtureId(int apiFixtureId, int? page = null)
+		{
+			if (page.HasValue)
+			{
+				return $"https://api-football-v1.p.rapidapi.com/v2/odds/fixture/{apiFixtureId}?page={page}";
+			}
+			return $"https://api-football-v1.p.rapidapi.com/v2/odds/fixture/{apiFixtureId}";
+		}
+
+		public static string GetFeedUrlByLeagueId(int apiLeagueId, int? page = null)
+		{
+			if (page.HasValue)
+			{
+				return $"https://api-football-v1.p.rapidapi.com/v2/odds/league/{apiLeagueId}?page={page}";
+			}
+			return $"https://api-football-v1.p.rapidapi.com/v2/odds/league/{apiLeagueId}";
 		}
 
 		public static OddsFeed FromJson(string json) => JsonConvert.DeserializeObject<OddsFeed>(json, Converter.Settings);

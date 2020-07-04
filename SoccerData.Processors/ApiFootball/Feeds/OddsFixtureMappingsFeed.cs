@@ -9,6 +9,10 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 	{
 		public static string GetFeedUrl(int? page = null)
 		{
+			if (page.HasValue)
+			{
+				return $"https://api-football-v1.p.rapidapi.com/v2/odds/bookmakers?page={page}";
+			}
 			return $"https://api-football-v1.p.rapidapi.com/v2/odds/bookmakers/";
 		}
 
