@@ -5,7 +5,7 @@ using System.Text;
 
 namespace SoccerData.Processors.ApiFootball.Feeds
 {
-	class OddsFixtureMappingsFeed
+	public class OddsFixtureMappingsFeed
 	{
 		public static string GetFeedUrl(int? page = null)
 		{
