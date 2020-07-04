@@ -352,7 +352,11 @@ namespace SoccerData.Processors.ApiFootball.Processors
 			#region PLAYER BOXSCORE
 			if (apiPlayerBases != null && apiPlayerBases.Count > 0)
 			{
-				var dbPlayerBoxscores = dbContext.PlayerBoxscores.Where(x => x.FixtureId == dbFixtureId && x.PlayerSeason != null && x.PlayerSeason.Player != null).ToDictionary(x => x.PlayerSeason.Player.ApiFootballId, y => y);
+				var dbPlayerBoxscores = dbContext.PlayerBoxscores
+													.Include(x => x.PlayerSeason)
+													.ThenInclude(y => y.Player)
+													.Where(x => x.FixtureId == dbFixtureId && x.PlayerSeason != null && x.PlayerSeason.Player != null)
+													.ToDictionary(x => x.PlayerSeason.Player.ApiFootballId, y => y);
 				bool hasApiPlayerBoxscores = feedFixture?.PlayerBoxscores != null;
 				bool hasApiLineups = feedFixture?.AllLineupPlayers != null;
 				foreach (var apiPlayerBase in apiPlayerBases)
