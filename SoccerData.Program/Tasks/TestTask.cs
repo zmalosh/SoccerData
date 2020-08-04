@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SoccerData.Model;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -8,7 +9,17 @@ namespace SoccerData.Program.Tasks
 	{
 		public override void Run()
 		{
-			throw new NotImplementedException();
+			SoccerDataContext context = null;
+			DateTime startTime = DateTime.Now;
+
+			int? cacheLength = 1;
+
+			var config = GetConfig();
+
+			context = new SoccerDataContext(config);
+
+			//var bookmakersProcessor = new Processors.ApiFootball.Processors.OddsBookmakersProcessor(cacheLength);
+			//bookmakersProcessor.Run(context);
 		}
 	}
 }

@@ -22,7 +22,7 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 			public int Count { get; set; }
 
 			[JsonProperty("bookmakers")]
-			public List<ApiBookmaker> Rounds { get; set; }
+			public List<ApiBookmaker> Bookmakers { get; set; }
 		}
 
 		public class ApiBookmaker
