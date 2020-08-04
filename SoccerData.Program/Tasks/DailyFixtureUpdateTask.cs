@@ -20,19 +20,21 @@ namespace SoccerData.Program.Tasks
 
 			context = new SoccerDataContext(config);
 
-			var countriesProcessor = new Processors.ApiFootball.Processors.CountriesProcessor();
+			var countriesProcessor = new Processors.ApiFootball.Processors.CountriesProcessor(cacheLength);
 			countriesProcessor.Run(context);
 
-			var leaguesProcessor = new Processors.ApiFootball.Processors.LeaguesProcessor();
+			var leaguesProcessor = new Processors.ApiFootball.Processors.LeaguesProcessor(cacheLength);
 			leaguesProcessor.Run(context);
 
 			var apiTransferTeamIds = new List<int>();
 
-			// ALWAYS VERIFY GAMES IN PAST 5 DAYS AND IN UPCOMING 5 DAYS
+			// ALWAYS VERIFY GAMES IN PAST 5 DAYS AND IN UPCOMING 2 DAYS
+			int futureDaysToGet = 2;
+			int pastDaysToGet = 5;
 			var apiUpdatedFixtureIds = context.Fixtures
 												.Where(x => x.GameTimeUtc.HasValue
-															&& x.GameTimeUtc.Value.AddDays(5).Date > DateTime.UtcNow.Date
-															&& x.GameTimeUtc.Value.AddDays(-5).Date <= DateTime.UtcNow.Date)
+															&& x.GameTimeUtc.Value.AddDays(pastDaysToGet).Date > DateTime.UtcNow.Date
+															&& x.GameTimeUtc.Value.AddDays(-futureDaysToGet).Date <= DateTime.UtcNow.Date)
 												.Select(x => x.ApiFootballId)
 												.ToList();
 
