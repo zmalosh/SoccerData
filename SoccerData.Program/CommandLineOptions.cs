@@ -12,5 +12,8 @@ namespace SoccerData.Program
 
 		[Option('d', "dailyFixtureTask", Required = false, HelpText = "Daily Fixture Data Quality Check")]
 		public bool DailyFixtureUpdateTask { get; set; }
+
+		[Option('t', "testTask", Required = false, HelpText = "Debug Test Task")]
+		public bool TestTask { get; set; }
 	}
 }
