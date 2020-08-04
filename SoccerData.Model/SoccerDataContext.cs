@@ -29,6 +29,7 @@ namespace SoccerData.Model
 
 		public DbSet<Country> Countries { get; set; }
 		public DbSet<Bookmaker> Bookmakers { get; set; }
+		public DbSet<OddsLabel> OddsLabels { get; set; }
 		public DbSet<Competition> Competitions { get; set; }
 		public DbSet<CompetitionSeason> CompetitionSeasons { get; set; }
 		public DbSet<CompetitionSeasonRound> CompetitionSeasonRounds { get; set; }
@@ -63,6 +64,15 @@ namespace SoccerData.Model
 			{
 				e.HasKey(b => b.BookmakerId);
 				e.Property(b => b.BookmakerName).HasMaxLength(128);
+				e.Property(b => b.ApiFootballName).HasMaxLength(128);
+				e.Property(c => c.DateCreatedUtc).HasColumnType("datetime");
+				e.Property(c => c.DateLastModifiedUtc).HasColumnType("datetime");
+			});
+
+			modelBuilder.Entity<OddsLabel>(e =>
+			{
+				e.HasKey(b => b.OddsLabelId);
+				e.Property(b => b.OddsLabelName).HasMaxLength(128);
 				e.Property(b => b.ApiFootballName).HasMaxLength(128);
 				e.Property(c => c.DateCreatedUtc).HasColumnType("datetime");
 				e.Property(c => c.DateLastModifiedUtc).HasColumnType("datetime");

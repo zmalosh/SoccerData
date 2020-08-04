@@ -8,7 +8,7 @@ namespace SoccerData.Processors.ApiFootball.Feeds
 	{
 		public static string GetFeedUrl()
 		{
-			return $"https://api-football-v1.p.rapidapi.com/v2/odds/bookmakers/";
+			return $"https://api-football-v1.p.rapidapi.com/v2/odds/labels/";
 		}
 
 		public static OddsLabelsFeed FromJson(string json) => JsonConvert.DeserializeObject<OddsLabelsFeed>(json, Converter.Settings);

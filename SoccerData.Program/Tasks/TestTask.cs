@@ -20,6 +20,9 @@ namespace SoccerData.Program.Tasks
 
 			//var bookmakersProcessor = new Processors.ApiFootball.Processors.OddsBookmakersProcessor(cacheLength);
 			//bookmakersProcessor.Run(context);
+
+			var oddsLabelsProcessor = new Processors.ApiFootball.Processors.OddsLabelsProcessor(cacheLength);
+			oddsLabelsProcessor.Run(context);
 		}
 	}
 }
